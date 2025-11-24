@@ -1,6 +1,7 @@
-<script>
+<script lang="ts">
     import { Application, Assets, Container, Sprite } from "pixi.js";
     import { onMount } from "svelte";
+    import type { Particle, Emitter } from "$lib/types";
 
     onMount(async () => {
         // Create a new application
