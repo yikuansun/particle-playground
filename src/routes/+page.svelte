@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import type { Particle, Emitter, Frame } from "$lib/types";
     import { Canvas, Layer } from "svelte-canvas";
+    import Srand, { type SrandInstance } from "seeded-rand";
 
     let emitters: Emitter[] = [{
         shape: {
@@ -10,12 +11,12 @@
             y: 300,
         },
         emissionRate: {
-            value: 1,
+            value: 10,
             variability: 0,
         },
         particlesPerEmission: {
             value: 1,
-            variability: 0,
+            variability: 2,
         },
         life: {
             value: 1,
@@ -23,11 +24,11 @@
         },
         speed: {
             value: 30,
-            variability: 0,
+            variability: 20,
         },
         rotation: {
             value: 0,
-            variability: 0,
+            variability: 90,
         },
     }];
 
@@ -38,19 +39,20 @@
         duration: 10,
     }
 
-    function getNextFrame(index: number, lastFrame: Frame) {
+    function getNextFrame(index: number, lastFrame: Frame, rng: SrandInstance) {
         let frame: Frame = { index, particles: [] };
 
         for (let emitter of emitters) {
             if (index % Math.floor(videoSettings.fps / emitter.emissionRate.value) === 0) {
                 // emit new particles
+                let count = emitter.particlesPerEmission.value + rng.intInRange(-emitter.particlesPerEmission.variability, emitter.particlesPerEmission.variability);
                 for (let i = 0; i < emitter.particlesPerEmission.value; i++) {
                     let particle: Particle = {
                         x: emitter.shape.x,
                         y: emitter.shape.y,
                         radius: 10,
-                        rotation: emitter.rotation.value,
-                        speed: emitter.speed.value,
+                        rotation: emitter.rotation.value + rng.inRange(-0.5, 0.5) * emitter.rotation.variability,
+                        speed: emitter.speed.value + rng.inRange(-0.5, 0.5) * emitter.speed.variability,
                         life: emitter.life.value,
                         color: "#fff",
                     }
@@ -73,9 +75,11 @@
 
     let frames: Frame[] = $state([]);
     function createAnimationFrames() {
+        let rng = new Srand(69);
+
         frames[0] = { index: 0, particles: [] };
         for (let i = 1; i < videoSettings.duration * videoSettings.fps; i++) {
-            frames[i] = getNextFrame(i, frames[i - 1]);
+            frames[i] = getNextFrame(i, frames[i - 1], rng);
         }
     }
 
