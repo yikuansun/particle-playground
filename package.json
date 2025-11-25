@@ -36,6 +36,6 @@
 		"vite": "^7.2.2"
 	},
 	"dependencies": {
-		"pixi.js": "^8.14.3"
+		"svelte-canvas": "^2.1.0"
 	}
 }

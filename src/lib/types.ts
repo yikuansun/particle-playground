@@ -38,3 +38,8 @@ export interface Particle {
     life: number;
     color: string;
 }
+
+export interface Frame {
+    index: number;
+    particles: Particle[];
+}

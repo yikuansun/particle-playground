@@ -1,48 +1,106 @@
 <script lang="ts">
-    import { Application, Assets, Container, Sprite } from "pixi.js";
     import { onMount } from "svelte";
-    import type { Particle, Emitter } from "$lib/types";
+    import type { Particle, Emitter, Frame } from "$lib/types";
+    import { Canvas, Layer } from "svelte-canvas";
 
-    onMount(async () => {
-        // Create a new application
-        const app = new Application();
+    let emitters: Emitter[] = [{
+        shape: {
+            type: 'point',
+            x: 400,
+            y: 300,
+        },
+        emissionRate: {
+            value: 1,
+            variability: 0,
+        },
+        particlesPerEmission: {
+            value: 1,
+            variability: 0,
+        },
+        life: {
+            value: 1,
+            variability: 0,
+        },
+        speed: {
+            value: 30,
+            variability: 0,
+        },
+        rotation: {
+            value: 0,
+            variability: 0,
+        },
+    }];
 
-        // Initialize the application
-        await app.init({ background: '#1099bb', width: 800, height: 600 });
+    let videoSettings = {
+        width: 800,
+        height: 600,
+        fps: 30,
+        duration: 10,
+    }
 
-        // Append the application canvas to the document body
-        document.body.appendChild(app.canvas);
+    function getNextFrame(index: number, lastFrame: Frame) {
+        let frame: Frame = { index, particles: [] };
 
-        // Create and add a container to the stage
-        const container = new Container();
-
-        app.stage.addChild(container);
-
-        // Load the bunny texture
-        const texture = await Assets.load('https://pixijs.com/assets/bunny.png');
-
-        // Create a 5x5 grid of bunnies in the container
-        for (let i = 0; i < 25; i++) {
-            const bunny = new Sprite(texture);
-
-            bunny.x = (i % 5) * 40;
-            bunny.y = Math.floor(i / 5) * 40;
-            container.addChild(bunny);
+        for (let emitter of emitters) {
+            if (index % Math.floor(videoSettings.fps / emitter.emissionRate.value) === 0) {
+                // emit new particles
+                for (let i = 0; i < emitter.particlesPerEmission.value; i++) {
+                    let particle: Particle = {
+                        x: emitter.shape.x,
+                        y: emitter.shape.y,
+                        radius: 10,
+                        rotation: emitter.rotation.value,
+                        speed: emitter.speed.value,
+                        life: emitter.life.value,
+                        color: "#fff",
+                    }
+                    frame.particles.push(particle);
+                }
+                
+            }
         }
 
-        // Move the container to the center
-        container.x = app.screen.width / 2;
-        container.y = app.screen.height / 2;
+        // copy particles from last frame
+        for (let particle of lastFrame.particles) {
+            let copy: Particle = Object.assign({}, particle);
+            copy.x += particle.speed / videoSettings.fps * Math.cos(particle.rotation * Math.PI / 180);
+            copy.y += particle.speed / videoSettings.fps * Math.sin(particle.rotation * Math.PI / 180);
+            frame.particles.push(copy);
+        }
 
-        // Center the bunny sprites in local container coordinates
-        container.pivot.x = container.width / 2;
-        container.pivot.y = container.height / 2;
+        return frame;
+    }
 
-        // Listen for animate update
-        app.ticker.add((time) => {
-            // Continuously rotate the container!
-            // * use delta to create frame-independent transform *
-            container.rotation -= 0.01 * time.deltaTime;
-        });
+    let frames: Frame[] = $state([]);
+    function createAnimationFrames() {
+        frames[0] = { index: 0, particles: [] };
+        for (let i = 1; i < videoSettings.duration * videoSettings.fps; i++) {
+            frames[i] = getNextFrame(i, frames[i - 1]);
+        }
+    }
+
+    let selectedFrame = $state(0);
+
+    onMount(async () => {
+        createAnimationFrames();
     });
 </script>
+
+<Canvas width={800} height={600}>
+    <Layer render={({ context: ctx }) => {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, 800, 600);
+    }} />
+    {#if frames[selectedFrame]}
+        {#each frames[selectedFrame].particles as particle}
+            <Layer render={({ context: ctx }) => {
+                ctx.fillStyle = particle.color;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
+                ctx.fill();
+            }} />
+        {/each}
+    {/if}
+</Canvas>
+
+<input type="range" min={0} max={videoSettings.duration * videoSettings.fps - 1} bind:value={selectedFrame} />
