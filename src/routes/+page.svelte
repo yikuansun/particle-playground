@@ -10,10 +10,10 @@
             x: 400,
             y: 300,
         },
-        emissionRate: 10,
+        emissionRate: 1,
         particlesPerEmission: {
-            value: 3,
-            variability: 2,
+            value: 80,
+            variability: 16,
         },
         particleParams: {
             radius: {
@@ -22,14 +22,14 @@
             },
             rotation: {
                 value: 0,
-                variability: 90,
+                variability: 360,
             },
             speed: {
-                value: 100,
-                variability: 40,
+                value: 300,
+                variability: 80,
             },
             lifespan: {
-                value: 2,
+                value: 0.8,
                 variability: 0.5,
             },
             color: "#fff",
@@ -85,7 +85,7 @@
     function createAnimationFrames() {
         let rng = new Srand(69);
 
-        frames[0] = { index: 0, particles: [] };
+        frames[0] = getNextFrame(0, { index: 0, particles: [] }, rng);
         for (let i = 1; i < videoSettings.duration * videoSettings.fps; i++) {
             frames[i] = getNextFrame(i, frames[i - 1], rng);
         }
