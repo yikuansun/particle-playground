@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, untrack } from "svelte";
     import type { Particle, Emitter, Frame } from "$lib/types";
     import { Canvas, Layer } from "svelte-canvas";
     import Srand, { type SrandInstance } from "seeded-rand";
 
-    let emitters: Emitter[] = [{
+    let emitters: Emitter[] = $state([{
         shape: {
             type: 'point',
             x: 400,
@@ -13,7 +13,7 @@
         emissionRate: 1,
         particlesPerEmission: {
             value: 80,
-            variability: 16,
+            variability: 10,
         },
         particleParams: {
             radius: {
@@ -34,7 +34,9 @@
             },
             color: "#fff",
         },
-    }];
+    }]);
+
+    $inspect(emitters);
 
     let videoSettings = {
         width: 800,
@@ -54,7 +56,7 @@
                     let particle: Particle = {
                         x: emitter.shape.x,
                         y: emitter.shape.y,
-                        radius: 10,
+                        radius: emitter.particleParams.radius.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.radius.variability,
                         rotation: emitter.particleParams.rotation.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.rotation.variability,
                         speed: emitter.particleParams.speed.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.speed.variability,
                         lifespan: emitter.particleParams.lifespan.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.lifespan.variability,
@@ -134,6 +136,49 @@
         </div>
         <div class="w-100">
             <b>Emitters</b>
+            {#each emitters as emitter}
+                <div>
+                    <div class="flex flex-row">
+                        <span class="grow">Emissions per second</span>
+                        <input type="number" bind:value={emitter.emissionRate} onchange={createAnimationFrames} min={0.5} max={10} step={0.1} class="w-20" />
+                    </div>
+                    <div class="flex flex-row">
+                        <span class="grow">Particles per emission</span>
+                        <input type="number" bind:value={emitter.particlesPerEmission.value} onchange={createAnimationFrames} min={0} max={100} step={1} class="w-20" />
+                        <span>±</span>
+                        <input type="number" bind:value={emitter.particlesPerEmission.variability} onchange={createAnimationFrames} min={0} max={100} step={1} class="w-20" />
+                    </div>
+                    <b>Default particle parameters</b>
+                    <div class="flex flex-row gap-2">
+                        <span class="grow">Radius</span>
+                        <input type="number" bind:value={emitter.particleParams.radius.value} onchange={createAnimationFrames} min={0} max={100} step={1} class="w-20" />
+                        <span>±</span>
+                        <input type="number" bind:value={emitter.particleParams.radius.variability} onchange={createAnimationFrames} min={0} max={100} step={1} class="w-20" />
+                    </div>
+                    <div class="flex flex-row gap-2">
+                        <span class="grow">Rotation</span>
+                        <input type="number" bind:value={emitter.particleParams.rotation.value} onchange={createAnimationFrames} min={0} max={360} step={1} class="w-20" />
+                        <span>±</span>
+                        <input type="number" bind:value={emitter.particleParams.rotation.variability} onchange={createAnimationFrames} min={0} max={360} step={1} class="w-20" />
+                    </div>
+                    <div class="flex flex-row gap-2">
+                        <span class="grow">Speed</span>
+                        <input type="number" bind:value={emitter.particleParams.speed.value} onchange={createAnimationFrames} min={0} max={1000} step={1} class="w-20" />
+                        <span>±</span>
+                        <input type="number" bind:value={emitter.particleParams.speed.variability} onchange={createAnimationFrames} min={0} max={1000} step={1} class="w-20" />
+                    </div>
+                    <div class="flex flex-row gap-2">
+                        <span class="grow">Lifespan</span>
+                        <input type="number" bind:value={emitter.particleParams.lifespan.value} onchange={createAnimationFrames} min={0} max={10} step={0.1} class="w-20" />
+                        <span>±</span>
+                        <input type="number" bind:value={emitter.particleParams.lifespan.variability} onchange={createAnimationFrames} min={0} max={10} step={0.1} class="w-20" />
+                    </div>
+                    <div class="flex flex-row gap-2">
+                        <span class="grow">Color</span>
+                        <input type="color" bind:value={emitter.particleParams.color} onchange={createAnimationFrames} />
+                    </div>
+                </div>
+            {/each}
         </div>
     </div>
     <div class="flex flex-row gap-4">
