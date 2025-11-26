@@ -10,25 +10,29 @@
             x: 400,
             y: 300,
         },
-        emissionRate: {
-            value: 10,
-            variability: 0,
-        },
+        emissionRate: 10,
         particlesPerEmission: {
             value: 1,
             variability: 2,
         },
-        life: {
-            value: 1,
-            variability: 0,
-        },
-        speed: {
-            value: 30,
-            variability: 20,
-        },
-        rotation: {
-            value: 0,
-            variability: 90,
+        particleParams: {
+            radius: {
+                value: 10,
+                variability: 0,
+            },
+            rotation: {
+                value: 0,
+                variability: 90,
+            },
+            speed: {
+                value: 100,
+                variability: 40,
+            },
+            life: {
+                value: 10,
+                variability: 0,
+            },
+            color: "#fff",
         },
     }];
 
@@ -43,7 +47,7 @@
         let frame: Frame = { index, particles: [] };
 
         for (let emitter of emitters) {
-            if (index % Math.floor(videoSettings.fps / emitter.emissionRate.value) === 0) {
+            if (index % Math.max(Math.floor(videoSettings.fps / emitter.emissionRate), 1) === 0) {
                 // emit new particles
                 let count = emitter.particlesPerEmission.value + rng.intInRange(-emitter.particlesPerEmission.variability, emitter.particlesPerEmission.variability);
                 for (let i = 0; i < emitter.particlesPerEmission.value; i++) {
@@ -51,9 +55,9 @@
                         x: emitter.shape.x,
                         y: emitter.shape.y,
                         radius: 10,
-                        rotation: emitter.rotation.value + rng.inRange(-0.5, 0.5) * emitter.rotation.variability,
-                        speed: emitter.speed.value + rng.inRange(-0.5, 0.5) * emitter.speed.variability,
-                        life: emitter.life.value,
+                        rotation: emitter.particleParams.rotation.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.rotation.variability,
+                        speed: emitter.particleParams.speed.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.speed.variability,
+                        life: emitter.particleParams.life.value,
                         color: "#fff",
                     }
                     frame.particles.push(particle);

@@ -22,11 +22,9 @@ export interface PMNumber {
 
 export interface Emitter {
     shape: EmitterShape;
-    emissionRate: PMNumber;
+    emissionRate: number;
     particlesPerEmission: PMNumber;
-    life: PMNumber;
-    speed: PMNumber;
-    rotation: PMNumber;
+    particleParams: ParticleParams;
 }
 
 export interface Particle {
@@ -36,6 +34,14 @@ export interface Particle {
     rotation: number;
     speed: number;
     life: number;
+    color: string;
+}
+
+export interface ParticleParams {
+    radius: PMNumber;
+    rotation: PMNumber;
+    speed: PMNumber;
+    life: PMNumber;
     color: string;
 }
 
