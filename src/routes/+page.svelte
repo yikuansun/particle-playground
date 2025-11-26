@@ -85,26 +85,50 @@
 
     let selectedFrame = $state(0);
 
+    let videoPlaying = $state(false);
+    function playVideo() {
+        if (videoPlaying) {
+            setTimeout(playVideo, 1000 / videoSettings.fps);
+        }
+
+        selectedFrame = (selectedFrame + 1) % (videoSettings.duration * videoSettings.fps);
+    }
+
     onMount(async () => {
         createAnimationFrames();
     });
 </script>
 
-<Canvas width={800} height={600}>
-    <Layer render={({ context: ctx }) => {
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, 800, 600);
-    }} />
-    {#if frames[selectedFrame]}
-        {#each frames[selectedFrame].particles as particle}
+<div class="flex flex-col w-full h-full gap-5 p-5 box-border">
+    <div class="grow flex flex-row gap-4">
+        <Canvas width={800} height={600}>
             <Layer render={({ context: ctx }) => {
-                ctx.fillStyle = particle.color;
-                ctx.beginPath();
-                ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
-                ctx.fill();
+                ctx.fillStyle = "#000";
+                ctx.fillRect(0, 0, 800, 600);
             }} />
-        {/each}
-    {/if}
-</Canvas>
+            {#if frames[selectedFrame]}
+                {#each frames[selectedFrame].particles as particle}
+                    <Layer render={({ context: ctx }) => {
+                        ctx.fillStyle = particle.color;
+                        ctx.beginPath();
+                        ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }} />
+                {/each}
+            {/if}
+        </Canvas>
+    </div>
+    <div class="flex flex-row gap-4">
+        <input type="checkbox" bind:checked={videoPlaying} onchange={playVideo} />
+        <input type="range" min={0} max={videoSettings.duration * videoSettings.fps - 1} bind:value={selectedFrame}
+            class="grow" />
+    </div>
+</div>
 
-<input type="range" min={0} max={videoSettings.duration * videoSettings.fps - 1} bind:value={selectedFrame} />
+<style>
+    :global(body) {
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+    }
+</style>
