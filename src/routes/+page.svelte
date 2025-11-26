@@ -50,7 +50,7 @@
             if (index % Math.max(Math.floor(videoSettings.fps / emitter.emissionRate), 1) === 0) {
                 // emit new particles
                 let count = emitter.particlesPerEmission.value + rng.intInRange(-emitter.particlesPerEmission.variability, emitter.particlesPerEmission.variability);
-                for (let i = 0; i < emitter.particlesPerEmission.value; i++) {
+                for (let i = 0; i < count; i++) {
                     let particle: Particle = {
                         x: emitter.shape.x,
                         y: emitter.shape.y,
