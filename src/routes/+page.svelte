@@ -101,22 +101,27 @@
 
 <div class="flex flex-col w-full h-full gap-5 p-5 box-border">
     <div class="grow flex flex-row gap-4">
-        <Canvas width={800} height={600}>
-            <Layer render={({ context: ctx }) => {
-                ctx.fillStyle = "#000";
-                ctx.fillRect(0, 0, 800, 600);
-            }} />
-            {#if frames[selectedFrame]}
-                {#each frames[selectedFrame].particles as particle}
-                    <Layer render={({ context: ctx }) => {
-                        ctx.fillStyle = particle.color;
-                        ctx.beginPath();
-                        ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
-                        ctx.fill();
-                    }} />
-                {/each}
-            {/if}
-        </Canvas>
+        <div class="grow flex justify-center items-center">
+            <Canvas width={800} height={600}>
+                <Layer render={({ context: ctx }) => {
+                    ctx.fillStyle = "#000";
+                    ctx.fillRect(0, 0, 800, 600);
+                }} />
+                {#if frames[selectedFrame]}
+                    {#each frames[selectedFrame].particles as particle}
+                        <Layer render={({ context: ctx }) => {
+                            ctx.fillStyle = particle.color;
+                            ctx.beginPath();
+                            ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
+                            ctx.fill();
+                        }} />
+                    {/each}
+                {/if}
+            </Canvas>
+        </div>
+        <div class="w-100">
+            <b>Emitters</b>
+        </div>
     </div>
     <div class="flex flex-row gap-4">
         <input type="checkbox" bind:checked={videoPlaying} onchange={playVideo} />
