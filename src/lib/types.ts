@@ -33,7 +33,8 @@ export interface Particle {
     radius: number;
     rotation: number;
     speed: number;
-    life: number;
+    lifespan: number;
+    health: number;
     color: string;
 }
 
@@ -41,7 +42,7 @@ export interface ParticleParams {
     radius: PMNumber;
     rotation: PMNumber;
     speed: PMNumber;
-    life: PMNumber;
+    lifespan: PMNumber;
     color: string;
 }
 

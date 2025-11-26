@@ -12,7 +12,7 @@
         },
         emissionRate: 10,
         particlesPerEmission: {
-            value: 1,
+            value: 3,
             variability: 2,
         },
         particleParams: {
@@ -28,9 +28,9 @@
                 value: 100,
                 variability: 40,
             },
-            life: {
-                value: 10,
-                variability: 0,
+            lifespan: {
+                value: 2,
+                variability: 0.5,
             },
             color: "#fff",
         },
@@ -57,12 +57,12 @@
                         radius: 10,
                         rotation: emitter.particleParams.rotation.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.rotation.variability,
                         speed: emitter.particleParams.speed.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.speed.variability,
-                        life: emitter.particleParams.life.value,
+                        lifespan: emitter.particleParams.lifespan.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.lifespan.variability,
+                        health: 1,
                         color: "#fff",
                     }
                     frame.particles.push(particle);
                 }
-                
             }
         }
 
@@ -71,8 +71,12 @@
             let copy: Particle = Object.assign({}, particle);
             copy.x += particle.speed / videoSettings.fps * Math.cos(particle.rotation * Math.PI / 180);
             copy.y += particle.speed / videoSettings.fps * Math.sin(particle.rotation * Math.PI / 180);
-            frame.particles.push(copy);
+            copy.health -= 1 / (copy.lifespan * videoSettings.fps);
+            if (copy.health > 0) frame.particles.push(copy);
         }
+
+        // remove dead particles
+        frame.particles = frame.particles.filter(p => p.health > 0);
 
         return frame;
     }
@@ -108,16 +112,21 @@
         <div class="grow flex justify-center items-center">
             <Canvas width={800} height={600}>
                 <Layer render={({ context: ctx }) => {
+                    ctx.save();
                     ctx.fillStyle = "#000";
                     ctx.fillRect(0, 0, 800, 600);
+                    ctx.restore();
                 }} />
                 {#if frames[selectedFrame]}
                     {#each frames[selectedFrame].particles as particle}
                         <Layer render={({ context: ctx }) => {
+                            ctx.save();
                             ctx.fillStyle = particle.color;
+                            ctx.globalAlpha = particle.health;
                             ctx.beginPath();
                             ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
                             ctx.fill();
+                            ctx.restore();
                         }} />
                     {/each}
                 {/if}
