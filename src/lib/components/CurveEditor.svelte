@@ -34,21 +34,18 @@
 		const lut = new Float32Array(resolution);
 		for (let i = 0; i < resolution; i++) {
 			const t = i / (resolution - 1);
-			lut[i] = solveCatmullRom(t, sorted);
+			lut[i] = solveCubicHermite(t, sorted);
 		}
 		
 		// Update the bound value
 		value = lut;
 	});
 
-	// --- Math Helpers (Catmull-Rom Spline) ---
-	
-	function solveCatmullRom(t: number, pts: Point[]): number {
+	// --- Math Helpers (Cubic Hermite Spline) ---
+	// Solves for Y given X (t) using non-uniform spacing to ensure C1 continuity
+	function solveCubicHermite(t: number, pts: Point[]): number {
 		// 1. Find the segment t is inside
-		// We want p1 and p2 to be the points surrounding t
-		let p0, p1, p2, p3;
-		
-		// Find index where point.x > t
+		// Find index `i` such that pts[i].x > t. 
 		let i = 0;
 		while (i < pts.length && pts[i].x <= t) i++;
 		
@@ -56,49 +53,74 @@
 		if (i === 0) return pts[0].y;
 		if (i === pts.length) return pts[pts.length - 1].y;
 
-		// Indices for the 4 points needed for calculation
-		const idx1 = i - 1;
-		const idx2 = i;
-		const idx0 = Math.max(0, idx1 - 1);
-		const idx3 = Math.min(pts.length - 1, idx2 + 1);
-
-		p0 = pts[idx0];
-		p1 = pts[idx1];
-		p2 = pts[idx2];
-		p3 = pts[idx3];
-
-		// Normalize t to be between 0 and 1 for this specific segment
-		const segmentRange = p2.x - p1.x;
-		if (segmentRange <= 0.0001) return p1.y;
+		const pLeft = pts[i - 1];
+		const pRight = pts[i];
 		
-		const localT = (t - p1.x) / segmentRange;
+		// 2. Identify neighbors for tangent calculations
+		const pPrev = i - 2 >= 0 ? pts[i - 2] : pLeft;
+		const pNext = i + 1 < pts.length ? pts[i + 1] : pRight;
 
-		// Perform Catmull-Rom interpolation
-		// We treat X as linear time, so we only interpolate Y
+		const segmentWidth = pRight.x - pLeft.x;
+		if (segmentWidth <= 0.000001) return pLeft.y;
+
+		// 3. Calculate Slopes (Finite Difference / Secant method)
+		// This creates smooth tangents by looking at the neighbors
+		
+		// Slope at Start of Segment (pLeft)
+		let slopeLeft;
+		if (pLeft === pPrev) {
+			slopeLeft = (pRight.y - pLeft.y) / (pRight.x - pLeft.x);
+		} else {
+			// Secant slope between Prev and Right
+			slopeLeft = (pRight.y - pPrev.y) / (pRight.x - pPrev.x);
+		}
+
+		// Slope at End of Segment (pRight)
+		let slopeRight;
+		if (pRight === pNext) {
+			slopeRight = (pRight.y - pLeft.y) / (pRight.x - pLeft.x);
+		} else {
+			// Secant slope between Left and Next
+			slopeRight = (pNext.y - pLeft.y) / (pNext.x - pLeft.x);
+		}
+
+		// 4. Interpolate using Cubic Hermite Basis
+		const localT = (t - pLeft.x) / segmentWidth;
+		
+		// Scale tangents to the local interval 0..1
+		const m0 = slopeLeft * segmentWidth;
+		const m1 = slopeRight * segmentWidth;
+
 		const t2 = localT * localT;
 		const t3 = t2 * localT;
 
-		const m0 = (p2.y - p0.y) * 0.5;
-		const m1 = (p3.y - p1.y) * 0.5;
+		const h00 = 2 * t3 - 3 * t2 + 1;
+		const h10 = t3 - 2 * t2 + localT;
+		const h01 = -2 * t3 + 3 * t2;
+		const h11 = t3 - t2;
 
-		return (2 * t3 - 3 * t2 + 1) * p1.y +
-			   (t3 - 2 * t2 + localT) * m0 + 
-			   (-2 * t3 + 3 * t2) * p2.y + 
-			   (t3 - t2) * m1;
+		return h00 * pLeft.y + 
+			   h10 * m0 + 
+			   h01 * pRight.y + 
+			   h11 * m1;
 	}
 
 	function generatePath(pts: Point[], width: number, h: number): string {
 		if (pts.length < 2) return "";
 		
-		// Generate high-res SVG path by sampling the spline
-		// This ensures the visual line matches the LUT data exactly
-		let d = `M ${pts[0].x * width} ${(1 - pts[0].y) * h}`;
+		// Sort points for rendering logic (safety)
+		const sorted = [...pts].sort((a, b) => a.x - b.x);
+
+		let d = `M ${sorted[0].x * width} ${(1 - sorted[0].y) * h}`;
 		
-		const steps = 100;
+		// Increase steps for smoother visual rendering
+		const steps = 200;
 		for (let i = 1; i <= steps; i++) {
 			const t = i / steps;
 			const x = t * width;
-			const y = (1 - solveCatmullRom(t, pts)) * h;
+			// Clip Y to 0-1 for rendering safety, though math should hold
+			const val = Math.max(0, Math.min(1, solveCubicHermite(t, sorted)));
+			const y = (1 - val) * h;
 			d += ` L ${x} ${y}`;
 		}
 		return d;
@@ -115,10 +137,30 @@
 		};
 	}
 
-	function handleDown(e: PointerEvent, id: number) {
+	function handlePointDown(e: PointerEvent, id: number) {
 		e.stopPropagation();
 		e.target?.setPointerCapture(e.pointerId);
 		draggingPointId = id;
+	}
+
+	function handleBackgroundDown(e: PointerEvent) {
+		e.preventDefault();
+
+		const pos = clientToLocal(e);
+		
+		const newId = Date.now();
+		const newPoint = { x: pos.x, y: pos.y, id: newId };
+		
+		const index = points.findIndex(p => p.x > pos.x);
+		
+		if (index === -1) return; 
+		
+		const newPoints = [...points];
+		newPoints.splice(index, 0, newPoint);
+		points = newPoints;
+
+		draggingPointId = newId;
+		(e.target as Element).setPointerCapture(e.pointerId);
 	}
 
 	function handleMove(e: PointerEvent) {
@@ -129,20 +171,19 @@
 		points = points.map(p => {
 			if (p.id !== draggingPointId) return p;
 
-			// Logic constraints:
-			// 1. Start and End points are locked to X=0 and X=1
 			let newX = pos.x;
 			const index = points.findIndex(pt => pt.id === draggingPointId);
 			
+			// Constraints
 			if (index === 0) newX = 0;
 			else if (index === points.length - 1) newX = 1;
 			else {
-				// 2. Points cannot cross each other on X axis (simplified constraint)
-				// A more advanced editor would swap indices, but clamping is safer for UX
+				// Prevent crossover
 				const prev = points[index - 1];
 				const next = points[index + 1];
-				if (prev) newX = Math.max(prev.x + 0.01, newX);
-				if (next) newX = Math.min(next.x - 0.01, newX);
+				// Add small buffer to prevent exact overlap division by zero
+				if (prev) newX = Math.max(prev.x + 0.001, newX);
+				if (next) newX = Math.min(next.x - 0.001, newX);
 			}
 
 			return { ...p, x: newX, y: pos.y };
@@ -154,30 +195,14 @@
 		e.target?.releasePointerCapture(e.pointerId);
 	}
 
-	function handleBgDblClick(e: MouseEvent) {
-		const pos = clientToLocal(e as unknown as PointerEvent);
-		
-		// Insert point in the correct sorted position
-		const newPoint = { x: pos.x, y: pos.y, id: Date.now() };
-		const index = points.findIndex(p => p.x > pos.x);
-		
-		if (index === -1) return; // Should not happen given 0 and 1 bounds
-		
-		const newPoints = [...points];
-		newPoints.splice(index, 0, newPoint);
-		points = newPoints;
-	}
-
 	function handlePointDblClick(e: MouseEvent, id: number) {
 		e.stopPropagation();
-		// Prevent deleting start/end points
 		const index = points.findIndex(p => p.id === id);
 		if (index === 0 || index === points.length - 1) return;
 		
 		points = points.filter(p => p.id !== id);
 	}
 
-	// Helper for rendering Grid
 	const gridLines = [0, 0.25, 0.5, 0.75, 1];
 
 </script>
@@ -189,20 +214,14 @@
 		height="100%" 
 		onpointermove={handleMove}
 		onpointerup={handleUp}
-		ondblclick={handleBgDblClick}
+		onpointerdown={handleBackgroundDown}
 		role="application"
 	>
-		<!-- Grid Background -->
 		{#each gridLines as pos}
-			<!-- Vertical -->
 			<line x1="{pos * 100}%" y1="0" x2="{pos * 100}%" y2="100%" class="grid-line" />
-			<!-- Horizontal -->
 			<line x1="0" y1="{pos * 100}%" x2="100%" y2="{pos * 100}%" class="grid-line" />
 		{/each}
 
-		<!-- The Curve -->
-		<!-- We need a wrapper div/rect for the size, but SVG path coordinates need pixel values usually
-			 or a viewBox. Here we calculate path strings using percentage-like logic in JS -->
 		{#if svgElement}
 			<path 
 				d={generatePath(points, svgElement.clientWidth, svgElement.clientHeight)}
@@ -213,26 +232,20 @@
 			/>
 		{/if}
 
-		<!-- Control Points -->
-		{#each points as p, i}
-			<!-- Connection Line to bottom (optional, makes it look like an integral) -->
-			<!-- <line x1={p.x * 100 + '%'} y1={(1 - p.y) * 100 + '%'} x2={p.x * 100 + '%'} y2="100%" stroke="rgba(255,255,255,0.1)" /> -->
-
-			<!-- Touch Target (invisible, larger) -->
+		{#each points as p}
 			<circle 
 				cx="{p.x * 100}%" 
 				cy="{(1 - p.y) * 100}%" 
 				r="12" 
 				fill="transparent"
 				class="touch-target"
-				onpointerdown={(e) => handleDown(e, p.id)}
+				onpointerdown={(e) => handlePointDown(e, p.id)}
 				ondblclick={(e) => handlePointDblClick(e, p.id)}
 				onpointerenter={() => hoverPointId = p.id}
 				onpointerleave={() => hoverPointId = null}
 				style:cursor={draggingPointId === p.id ? 'grabbing' : 'grab'}
 			/>
 
-			<!-- Visual Point -->
 			<circle 
 				cx="{p.x * 100}%" 
 				cy="{(1 - p.y) * 100}%" 
