@@ -36,6 +36,7 @@ export interface Particle {
     lifespan: number;
     health: number;
     color: string;
+    opacity: number;
 }
 
 export interface ParticleParams {

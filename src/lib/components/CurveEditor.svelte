@@ -14,10 +14,8 @@
 	// Initialize state
 	// We ensure there is always a start (0,y) and end (1,y) point
 	let points: Point[] = $state([
-		{ x: 0, y: 0.5, id: 1 },
-		{ x: 0.25, y: 0.8, id: 2 }, // Default S-curve shape
-		{ x: 0.75, y: 0.2, id: 3 },
-		{ x: 1, y: 0.5, id: 4 }
+		{ x: 0, y: 1, id: 1 },
+		{ x: 1, y: 0, id: 2 }
 	]);
 
 	let draggingPointId: number | null = $state(null);

@@ -61,6 +61,7 @@
                         lifespan: emitter.particleParams.lifespan.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.lifespan.variability,
                         health: 1,
                         color: "#fff",
+                        opacity: curveTest[0],
                     }
                     frame.particles.push(particle);
                 }
@@ -73,6 +74,11 @@
             copy.x += particle.speed / videoSettings.fps * Math.cos(particle.rotation * Math.PI / 180);
             copy.y += particle.speed / videoSettings.fps * Math.sin(particle.rotation * Math.PI / 180);
             copy.health -= 1 / (copy.lifespan * videoSettings.fps);
+            
+            let normalizedLife = Math.max(0, Math.min(1, 1 - copy.health));
+            const index = Math.floor(normalizedLife * (curveTest.length - 1));
+            copy.opacity = Math.max(0, Math.min(1, curveTest[index]));
+
             if (copy.health > 0) frame.particles.push(copy);
         }
 
@@ -106,6 +112,11 @@
     onMount(async () => {
         createAnimationFrames();
     });
+
+    let curveTest: Float32Array = $state(new Float32Array([
+        1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0
+    ]));
+    $inspect(curveTest);
 </script>
 
 <div class="flex flex-col w-full h-full gap-5 p-5 box-border">
@@ -123,7 +134,7 @@
                         <Layer render={({ context: ctx }) => {
                             ctx.save();
                             ctx.fillStyle = particle.color;
-                            ctx.globalAlpha = particle.health;
+                            ctx.globalAlpha = particle.opacity;
                             ctx.beginPath();
                             ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
                             ctx.fill();
@@ -178,7 +189,7 @@
                     </div>
                 </div>
 
-                <CurveEditor></CurveEditor>
+                <CurveEditor bind:value={curveTest}></CurveEditor> <!-- TODO: onchange event -->
             {/each}
         </div>
     </div>
