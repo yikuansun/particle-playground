@@ -3,6 +3,7 @@
     import type { Particle, Emitter, Frame } from "$lib/types";
     import { Canvas, Layer } from "svelte-canvas";
     import Srand, { type SrandInstance } from "seeded-rand";
+	import CurveEditor from "$lib/components/CurveEditor.svelte";
 
     let emitters: Emitter[] = $state([{
         shape: {
@@ -35,8 +36,6 @@
             color: "#fff",
         },
     }]);
-
-    $inspect(emitters);
 
     let videoSettings = {
         width: 800,
@@ -178,6 +177,8 @@
                         <input type="color" bind:value={emitter.particleParams.color} onchange={createAnimationFrames} />
                     </div>
                 </div>
+
+                <CurveEditor></CurveEditor>
             {/each}
         </div>
     </div>
