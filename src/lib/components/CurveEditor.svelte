@@ -5,7 +5,8 @@
 		value = $bindable(), 
 		resolution = 100,
 		color = "#3b82f6",
-		height = 200
+		height = 200,
+        onchange = () => {},
 	} = $props();
 
 	// Types
@@ -191,6 +192,7 @@
 	function handleUp(e: PointerEvent) {
 		draggingPointId = null;
 		e.target?.releasePointerCapture(e.pointerId);
+        onchange(value);
 	}
 
 	function handlePointDblClick(e: MouseEvent, id: number) {

@@ -189,7 +189,7 @@
                     </div>
                 </div>
 
-                <CurveEditor bind:value={curveTest}></CurveEditor> <!-- TODO: onchange event -->
+                <CurveEditor bind:value={curveTest} onchange={createAnimationFrames}></CurveEditor>
             {/each}
         </div>
     </div>
