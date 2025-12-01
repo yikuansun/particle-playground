@@ -37,6 +37,7 @@ export interface Particle {
     health: number;
     color: string;
     opacity: number;
+    lifetimeSettings: ParticleLifetimeSettings;
 }
 
 export interface ParticleParams {
@@ -45,6 +46,15 @@ export interface ParticleParams {
     speed: PMNumber;
     lifespan: PMNumber;
     color: string;
+    lifetimeSettings: ParticleLifetimeSettings;
+}
+
+export type CurveLut = Float32Array;
+
+export interface ParticleLifetimeSettings {
+    opacityCurve: CurveLut;
+    speedCurve: CurveLut;
+    radiusCurve: CurveLut;
 }
 
 export interface Frame {

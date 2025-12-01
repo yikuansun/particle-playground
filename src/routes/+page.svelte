@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount, untrack } from "svelte";
-    import type { Particle, Emitter, Frame } from "$lib/types";
+    import type { Particle, Emitter, Frame, ParticleLifetimeSettings, CurveLut } from "$lib/types";
     import { Canvas, Layer } from "svelte-canvas";
     import Srand, { type SrandInstance } from "seeded-rand";
 	import CurveEditor from "$lib/components/CurveEditor.svelte";
@@ -34,6 +34,11 @@
                 variability: 0.5,
             },
             color: "#fff",
+            lifetimeSettings: {
+                opacityCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
+                speedCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
+                radiusCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
+            }
         },
     }]);
 
@@ -61,7 +66,8 @@
                         lifespan: emitter.particleParams.lifespan.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.lifespan.variability,
                         health: 1,
                         color: "#fff",
-                        opacity: curveTest[0],
+                        opacity: emitter.particleParams.lifetimeSettings.opacityCurve[0],
+                        lifetimeSettings: emitter.particleParams.lifetimeSettings,
                     }
                     frame.particles.push(particle);
                 }
@@ -76,8 +82,8 @@
             copy.health -= 1 / (copy.lifespan * videoSettings.fps);
             
             let normalizedLife = Math.max(0, Math.min(1, 1 - copy.health));
-            const index = Math.floor(normalizedLife * (curveTest.length - 1));
-            copy.opacity = Math.max(0, Math.min(1, curveTest[index]));
+            const index = Math.floor(normalizedLife * (particle.lifetimeSettings.opacityCurve.length - 1));
+            copy.opacity = Math.max(0, Math.min(1, particle.lifetimeSettings.opacityCurve[index]));
 
             if (copy.health > 0) frame.particles.push(copy);
         }
@@ -112,11 +118,6 @@
     onMount(async () => {
         createAnimationFrames();
     });
-
-    let curveTest: Float32Array = $state(new Float32Array([
-        1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0
-    ]));
-    $inspect(curveTest);
 </script>
 
 <div class="flex flex-col w-full h-full gap-5 p-5 box-border">
@@ -187,9 +188,12 @@
                         <span class="grow">Color</span>
                         <input type="color" bind:value={emitter.particleParams.color} onchange={createAnimationFrames} />
                     </div>
+                    <b>Particle Lifetime Settings</b>
+                    <div>
+                        <span>Opacity curve</span>
+                        <CurveEditor bind:value={emitter.particleParams.lifetimeSettings.opacityCurve} onchange={createAnimationFrames}></CurveEditor>
+                    </div>
                 </div>
-
-                <CurveEditor bind:value={curveTest} onchange={createAnimationFrames}></CurveEditor>
             {/each}
         </div>
     </div>
