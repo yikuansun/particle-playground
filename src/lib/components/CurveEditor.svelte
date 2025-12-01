@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 
 	let { 
 		value = $bindable(), 
@@ -189,18 +189,27 @@
 		});
 	}
 
-	function handleUp(e: PointerEvent) {
+	async function handleUp(e: PointerEvent) {
+		const wasDragging = draggingPointId !== null;
 		draggingPointId = null;
 		e.target?.releasePointerCapture(e.pointerId);
-        onchange(value);
+
+		// Only trigger change if we were actually interacting
+		if (wasDragging) {
+			await tick(); // Wait for $effect to update 'value'
+			onchange();
+		}
 	}
 
-	function handlePointDblClick(e: MouseEvent, id: number) {
+	async function handlePointDblClick(e: MouseEvent, id: number) {
 		e.stopPropagation();
 		const index = points.findIndex(p => p.id === id);
 		if (index === 0 || index === points.length - 1) return;
 		
 		points = points.filter(p => p.id !== id);
+		
+		await tick(); // Wait for $effect to update 'value'
+		onchange();
 	}
 
 	const gridLines = [0, 0.25, 0.5, 0.75, 1];
@@ -233,6 +242,7 @@
 		{/if}
 
 		{#each points as p}
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<circle 
 				cx="{p.x * 100}%" 
 				cy="{(1 - p.y) * 100}%" 
