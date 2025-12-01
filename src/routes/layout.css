@@ -1,3 +1,14 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@layer base {
+    body {
+        @apply bg-neutral-900 text-neutral-200;
+    }
+
+    input[type=number] {
+        padding: 4px 8px;
+        @apply bg-neutral-800 text-neutral-200 border border-neutral-700 rounded-md;
+    }
+}
