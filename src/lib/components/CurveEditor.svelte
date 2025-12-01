@@ -7,6 +7,10 @@
 		color = "#3b82f6",
 		height = 200,
         onchange = () => {},
+		defaultPoints = [
+			{ x: 0, y: 1 },
+			{ x: 1, y: 0 }
+		],
 	} = $props();
 
 	// Types
@@ -14,10 +18,13 @@
 
 	// Initialize state
 	// We ensure there is always a start (0,y) and end (1,y) point
-	let points: Point[] = $state([
-		{ x: 0, y: 1, id: 1 },
-		{ x: 1, y: 0, id: 2 }
-	]);
+	let points: Point[] = $state(
+		defaultPoints.map((p, i) => ({
+			x: p.x,
+			y: p.y,
+			id: i
+		}))
+	);
 
 	let draggingPointId: number | null = $state(null);
 	let hoverPointId: number | null = $state(null);

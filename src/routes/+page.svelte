@@ -36,7 +36,7 @@
             color: "#fff",
             lifetimeSettings: {
                 opacityCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
-                speedCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
+                speedCurve: new Float32Array((new Array(100)).fill(1)),
                 radiusCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
             }
         },
@@ -77,13 +77,16 @@
         // copy particles from last frame
         for (let particle of lastFrame.particles) {
             let copy: Particle = Object.assign({}, particle);
-            copy.x += particle.speed / videoSettings.fps * Math.cos(particle.rotation * Math.PI / 180);
-            copy.y += particle.speed / videoSettings.fps * Math.sin(particle.rotation * Math.PI / 180);
+
+            let normalizedLife = Math.max(0, Math.min(1, 1 - copy.health));
+            const lutIndex = Math.floor(normalizedLife * (particle.lifetimeSettings.opacityCurve.length - 1));
+
+            let currentSpeed = particle.speed * particle.lifetimeSettings.speedCurve[lutIndex];
+            copy.x += currentSpeed / videoSettings.fps * Math.cos(particle.rotation * Math.PI / 180);
+            copy.y += currentSpeed / videoSettings.fps * Math.sin(particle.rotation * Math.PI / 180);
             copy.health -= 1 / (copy.lifespan * videoSettings.fps);
             
-            let normalizedLife = Math.max(0, Math.min(1, 1 - copy.health));
-            const index = Math.floor(normalizedLife * (particle.lifetimeSettings.opacityCurve.length - 1));
-            copy.opacity = Math.max(0, Math.min(1, particle.lifetimeSettings.opacityCurve[index]));
+            copy.opacity = Math.max(0, Math.min(1, particle.lifetimeSettings.opacityCurve[lutIndex]));
 
             if (copy.health > 0) frame.particles.push(copy);
         }
@@ -192,6 +195,16 @@
                     <div>
                         <span>Opacity curve</span>
                         <CurveEditor bind:value={emitter.particleParams.lifetimeSettings.opacityCurve} onchange={createAnimationFrames}></CurveEditor>
+                    </div>
+                    <div>
+                        <span>Speed over time</span>
+                        <CurveEditor
+                            bind:value={emitter.particleParams.lifetimeSettings.speedCurve}
+                            defaultPoints={[
+                                { x: 0, y: 1 },
+                                { x: 1, y: 1 }
+                            ]}
+                            onchange={createAnimationFrames} />
                     </div>
                 </div>
             {/each}
