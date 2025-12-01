@@ -198,7 +198,18 @@
         </div>
     </div>
     <div class="flex flex-row gap-4">
-        <input type="checkbox" bind:checked={videoPlaying} onchange={playVideo} />
+        <button onclick={() => {
+            selectedFrame--;
+            if (selectedFrame < 0) selectedFrame = videoSettings.duration * videoSettings.fps - 1;
+        }}>-</button>
+        <label>
+            <input type="checkbox" bind:checked={videoPlaying} onchange={playVideo} class="hidden" />
+            {#if videoPlaying}<span>&#9208;</span>{:else}<span>&#9654;</span>{/if}
+        </label>
+        <button onclick={() => {
+            selectedFrame++;
+            if (selectedFrame >= videoSettings.duration * videoSettings.fps) selectedFrame = 0;
+        }}>+</button>
         <input type="range" min={0} max={videoSettings.duration * videoSettings.fps - 1} bind:value={selectedFrame}
             class="grow" />
     </div>
