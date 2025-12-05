@@ -242,17 +242,23 @@
         <button onclick={() => {
             selectedFrame--;
             if (selectedFrame < 0) selectedFrame = videoSettings.duration * videoSettings.fps - 1;
-        }}>-</button>
+        }}>
+            <span class="icon icon-20 icon-filled align-middle">skip_previous</span>
+        </button>
         <label>
             <input type="checkbox" bind:checked={videoPlaying} onchange={playVideo} class="hidden" />
-            {#if videoPlaying}<span>&#9208;</span>{:else}<span>&#9654;</span>{/if}
+            <span class="icon icon-20 icon-filled align-middle">
+                {#if videoPlaying} pause {:else} play_arrow {/if}
+            </span>
         </label>
         <button onclick={() => {
             selectedFrame++;
             if (selectedFrame >= videoSettings.duration * videoSettings.fps) selectedFrame = 0;
-        }}>+</button>
+        }}>
+            <span class="icon icon-20 icon-filled align-middle">skip_next</span>    
+        </button>
         <input type="range" min={0} max={videoSettings.duration * videoSettings.fps - 1} bind:value={selectedFrame}
-            class="grow" />
+            class="grow accent-blue-400" />
     </div>
 </div>
 

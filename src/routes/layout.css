@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+@import "@savaryna/tailwindcss-material-symbols";
 
 @layer base {
     body {
