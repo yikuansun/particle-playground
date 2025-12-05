@@ -4,6 +4,8 @@
     import { Canvas, Layer } from "svelte-canvas";
     import Srand, { type SrandInstance } from "seeded-rand";
 	import CurveEditor from "$lib/components/CurveEditor.svelte";
+    import Modal from "$lib/components/Modal.svelte";
+    import { exportToMp4 } from "$lib/utils/videoExporter"
 
     let emitters: Emitter[] = $state([{
         shape: {
@@ -118,34 +120,60 @@
         selectedFrame = (selectedFrame + 1) % (videoSettings.duration * videoSettings.fps);
     }
 
+    function drawFrame(ctx: CanvasRenderingContext2D, frame: Frame, bg: string="black") {
+        if (bg === "transparent") ctx.clearRect(0, 0, videoSettings.width, videoSettings.height);
+        else {
+            ctx.save();
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, videoSettings.width, videoSettings.height);
+            ctx.restore();
+        }
+        for (let particle of frame.particles) {
+            ctx.save();
+            ctx.fillStyle = particle.color;
+            ctx.globalAlpha = particle.opacity;
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+    
+    let exportModalOpen = $state(false);
+    let isExporting = $state(false);
+
+    async function handleExport() {
+        if (isExporting) return;
+        isExporting = true;
+        try {
+            // We pass the raw data frames and settings
+            await exportToMp4(frames, drawFrame, videoSettings);
+        } catch (e) {
+            console.error("Export failed", e);
+            alert("Export failed. Please check console.");
+        } finally {
+            isExporting = false;
+        }
+    }
+
     onMount(async () => {
         createAnimationFrames();
     });
 </script>
 
 <div class="flex flex-col w-full h-full gap-5 p-5 box-border">
+    <div class="flex flex-row gap-5">
+        <span class="font-bold">Particle Playground</span>
+        <button onclick={() => {
+            exportModalOpen = true;
+        }}>Export</button>
+    </div>
     <div class="grow flex flex-row gap-4">
         <div class="grow flex justify-center items-center">
             <Canvas width={800} height={600}>
                 <Layer render={({ context: ctx }) => {
-                    ctx.save();
-                    ctx.fillStyle = "#000";
-                    ctx.fillRect(0, 0, 800, 600);
-                    ctx.restore();
+                    drawFrame(ctx, frames[selectedFrame]);
                 }} />
-                {#if frames[selectedFrame]}
-                    {#each frames[selectedFrame].particles as particle}
-                        <Layer render={({ context: ctx }) => {
-                            ctx.save();
-                            ctx.fillStyle = particle.color;
-                            ctx.globalAlpha = particle.opacity;
-                            ctx.beginPath();
-                            ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
-                            ctx.fill();
-                            ctx.restore();
-                        }} />
-                    {/each}
-                {/if}
             </Canvas>
         </div>
         <div class="w-100">
@@ -227,6 +255,16 @@
             class="grow" />
     </div>
 </div>
+
+<Modal bind:open={exportModalOpen} title="Export">
+    <button 
+        onclick={handleExport} 
+        disabled={isExporting}
+        class="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+    >
+        {isExporting ? 'Rendering...' : 'Export MP4'}
+    </button>
+</Modal>
 
 <style>
     :global(body) {
