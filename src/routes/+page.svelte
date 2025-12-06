@@ -187,6 +187,13 @@
                 <div>
                     <b>Emitter Properties</b>
                     <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Position</span></span>
+                        <span><span class="align-middle">x:</span></span>
+                        <input type="number" bind:value={emitter.shape.x} onchange={createAnimationFrames} min={0} max={videoSettings.width} class="number-input" />
+                        <span class="pl-1.5"><span class="align-middle">y:</span></span>
+                        <input type="number" bind:value={emitter.shape.y} onchange={createAnimationFrames} min={0} max={videoSettings.height} class="number-input" />
+                    </div>
+                    <div class="flex flex-row gap-2 m-1">
                         <span class="grow"><span class="align-middle">Emissions per second</span></span>
                         <input type="number" bind:value={emitter.emissionRate} onchange={createAnimationFrames} min={0.5} max={10} step={0.1} class="number-input" />
                     </div>
