@@ -266,9 +266,10 @@
                     <div class="flex flex-row gap-2 m-1">
                         <span class="grow"><span class="align-middle">Texture</span></span>
                         <select bind:value={emitter.particleParams.texture} onchange={async () => {
-                                await textureManager.loadTexture(emitter.particleParams.texture, textureUrls[emitter.particleParams.texture]);
+                                if (emitter.particleParams.texture !== "default")
+                                    await textureManager.loadTexture(emitter.particleParams.texture, textureUrls[emitter.particleParams.texture]);
                                 createAnimationFrames();
-                            }}>
+                            }} class="dropdown">
                             <option value="default">Default</option>
                             <option value="smoke">Smoke</option>
                             <option value="dot">Dot</option>
