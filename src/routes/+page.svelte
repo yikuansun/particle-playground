@@ -44,12 +44,12 @@
         },
     }]);
 
-    let videoSettings = {
+    let videoSettings = $state({
         width: 800,
         height: 600,
         fps: 30,
         duration: 10,
-    }
+    });
 
     function getNextFrame(index: number, lastFrame: Frame, rng: SrandInstance) {
         let frame: Frame = { index, particles: [] };
@@ -156,6 +156,8 @@
         }
     }
 
+    let settingsModalOpen = $state(false);
+
     onMount(async () => {
         createAnimationFrames();
     });
@@ -167,19 +169,23 @@
         <button onclick={() => {
             exportModalOpen = true;
         }}>Export</button>
+        <button onclick={() => {
+            settingsModalOpen = true;
+        }}>Project Settings</button>
     </div>
-    <div class="grow flex flex-row gap-4">
+    <div class="grow flex flex-row gap-4 min-h-0">
         <div class="grow flex justify-center items-center">
-            <Canvas width={800} height={600}>
+            <Canvas width={videoSettings.width} height={videoSettings.height} class="w-full! h-full! object-contain">
                 <Layer render={({ context: ctx }) => {
                     drawFrame(ctx, frames[selectedFrame]);
                 }} />
             </Canvas>
         </div>
-        <div class="w-100">
+        <div class="w-100 overflow-y-scroll pr-3">
             <b>Emitters</b>
             {#each emitters as emitter}
                 <div>
+                    <b>Emitter Properties</b>
                     <div class="flex flex-row gap-2 m-1">
                         <span class="grow"><span class="align-middle">Emissions per second</span></span>
                         <input type="number" bind:value={emitter.emissionRate} onchange={createAnimationFrames} min={0.5} max={10} step={0.1} class="number-input" />
@@ -272,6 +278,27 @@
     >
         {isExporting ? 'Rendering...' : 'Export MP4'}
     </button>
+</Modal>
+
+<Modal bind:open={settingsModalOpen} title="Project Settings">
+    <div class="flex flex-col gap-2">
+        <div class="flex flex-row gap-2">
+            <span class="grow"><span class="align-middle">Width</span></span>
+            <input type="number" bind:value={videoSettings.width} class="number-input" onchange={createAnimationFrames} />
+        </div>
+        <div class="flex flex-row gap-2">
+            <span class="grow"><span class="align-middle">Height</span></span>
+            <input type="number" bind:value={videoSettings.height} class="number-input" onchange={createAnimationFrames} />
+        </div>
+        <div class="flex flex-row gap-2">
+            <span class="grow"><span class="align-middle">FPS</span></span>
+            <input type="number" bind:value={videoSettings.fps} class="number-input" onchange={createAnimationFrames} />
+        </div>
+        <div class="flex flex-row gap-2">
+            <span class="grow"><span class="align-middle">Duration</span></span>
+            <input type="number" bind:value={videoSettings.duration} class="number-input" onchange={createAnimationFrames} />
+        </div>
+    </div>
 </Modal>
 
 <style>
