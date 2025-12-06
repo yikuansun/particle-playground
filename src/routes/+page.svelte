@@ -8,6 +8,13 @@
     import { exportToMp4 } from "$lib/utils/videoExporter"
     import { textureManager } from "$lib/utils/TextureManager";
 
+    let textureUrls: Record<string, string> = {};
+    (async () => {
+        textureUrls["smoke"] = (await import("$lib/assets/textures/smoke.png")).default;
+        textureUrls["dot"] = (await import("$lib/assets/textures/dot.png")).default;
+        textureUrls["circle_test"] = (await import("$lib/assets/textures/circle-test.png")).default;
+    })();
+
     let emitters: Emitter[] = $state([{
         shape: {
             type: 'point',
@@ -36,7 +43,7 @@
                 value: 0.8,
                 variability: 0.5,
             },
-            color: "#FFFFFF",
+            color: "#ffffff",
             lifetimeSettings: {
                 opacityCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
                 speedCurve: new Float32Array((new Array(100)).fill(1)),
@@ -168,12 +175,6 @@
     let settingsModalOpen = $state(false);
 
     onMount(async () => {
-        await textureManager.loadTextures({
-            smoke: (await import("$lib/assets/textures/smoke.png")).default,
-            dot: (await import("$lib/assets/textures/dot.png")).default,
-            circle_test: (await import("$lib/assets/textures/circle-test.png")).default,
-        });
-
         createAnimationFrames();
     });
 </script>
@@ -264,7 +265,10 @@
                     </div>
                     <div class="flex flex-row gap-2 m-1">
                         <span class="grow"><span class="align-middle">Texture</span></span>
-                        <select bind:value={emitter.particleParams.texture} onchange={createAnimationFrames}>
+                        <select bind:value={emitter.particleParams.texture} onchange={async () => {
+                                await textureManager.loadTexture(emitter.particleParams.texture, textureUrls[emitter.particleParams.texture]);
+                                createAnimationFrames();
+                            }}>
                             <option value="default">Default</option>
                             <option value="smoke">Smoke</option>
                             <option value="dot">Dot</option>
