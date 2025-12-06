@@ -38,6 +38,7 @@ export interface Particle {
     color: string;
     opacity: number;
     lifetimeSettings: ParticleLifetimeSettings;
+    texture: string;
 }
 
 export interface ParticleParams {
@@ -47,6 +48,7 @@ export interface ParticleParams {
     lifespan: PMNumber;
     color: string;
     lifetimeSettings: ParticleLifetimeSettings;
+    texture: string;
 }
 
 export type CurveLut = Float32Array;

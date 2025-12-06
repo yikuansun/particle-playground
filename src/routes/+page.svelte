@@ -6,6 +6,7 @@
 	import CurveEditor from "$lib/components/CurveEditor.svelte";
     import Modal from "$lib/components/Modal.svelte";
     import { exportToMp4 } from "$lib/utils/videoExporter"
+    import { textureManager } from "$lib/utils/TextureManager";
 
     let emitters: Emitter[] = $state([{
         shape: {
@@ -35,12 +36,13 @@
                 value: 0.8,
                 variability: 0.5,
             },
-            color: "#fff",
+            color: "#FFFFFF",
             lifetimeSettings: {
                 opacityCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
                 speedCurve: new Float32Array((new Array(100)).fill(1)),
                 radiusCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
-            }
+            },
+            texture: "default",
         },
     }]);
 
@@ -67,9 +69,10 @@
                         speed: emitter.particleParams.speed.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.speed.variability,
                         lifespan: emitter.particleParams.lifespan.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.lifespan.variability,
                         health: 1,
-                        color: "#fff",
+                        color: emitter.particleParams.color,
                         opacity: emitter.particleParams.lifetimeSettings.opacityCurve[0],
                         lifetimeSettings: emitter.particleParams.lifetimeSettings,
+                        texture: emitter.particleParams.texture,
                     }
                     frame.particles.push(particle);
                 }
@@ -120,7 +123,7 @@
         selectedFrame = (selectedFrame + 1) % (videoSettings.duration * videoSettings.fps);
     }
 
-    function drawFrame(ctx: CanvasRenderingContext2D, frame: Frame, bg: string="black") {
+    function drawFrame(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, frame: Frame, bg: string="black") {
         if (bg === "transparent") ctx.clearRect(0, 0, videoSettings.width, videoSettings.height);
         else {
             ctx.save();
@@ -130,11 +133,17 @@
         }
         for (let particle of frame.particles) {
             ctx.save();
-            ctx.fillStyle = particle.color;
             ctx.globalAlpha = particle.opacity;
-            ctx.beginPath();
-            ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
-            ctx.fill();
+            if (particle.texture === "default") {
+                ctx.fillStyle = particle.color;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.radius, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+            else {
+                const texture = textureManager.getTintedTexture(particle.texture, particle.color);
+                ctx.drawImage(texture as CanvasImageSource, particle.x - particle.radius, particle.y - particle.radius, particle.radius * 2, particle.radius * 2);
+            }
             ctx.restore();
         }
     }
@@ -159,6 +168,10 @@
     let settingsModalOpen = $state(false);
 
     onMount(async () => {
+        await textureManager.loadTextures({
+            smoke: (await import("$lib/assets/textures/smoke.png")).default,
+        });
+
         createAnimationFrames();
     });
 </script>
@@ -190,7 +203,9 @@
         <div class="grow flex justify-center items-center">
             <Canvas width={videoSettings.width} height={videoSettings.height} class="w-full! h-full! object-contain">
                 <Layer render={({ context: ctx }) => {
-                    drawFrame(ctx, frames[selectedFrame]);
+                    if (frames[selectedFrame]) {
+                        drawFrame(ctx, frames[selectedFrame]);
+                    }
                 }} />
             </Canvas>
         </div>
@@ -244,6 +259,13 @@
                     <div class="flex flex-row gap-2 m-1">
                         <span class="grow"><span class="align-middle">Color</span></span>
                         <input type="color" bind:value={emitter.particleParams.color} onchange={createAnimationFrames} />
+                    </div>
+                    <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Texture</span></span>
+                        <select bind:value={emitter.particleParams.texture} onchange={createAnimationFrames}>
+                            <option value="default">Default</option>
+                            <option value="smoke">Smoke</option>
+                        </select>
                     </div>
                     <b>Particle Lifetime Settings</b>
                     <div>

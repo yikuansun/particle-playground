@@ -7,7 +7,7 @@ interface VideoSettings {
     fps: number;
 }
 
-export async function exportToMp4(frames: Frame[], drawFrame: (ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, frame: Frame) => void, settings: VideoSettings) {
+export async function exportToMp4(frames: Frame[], drawFrame: (ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, frame: Frame, bg?: string) => void, settings: VideoSettings) {
     const { width, height, fps } = settings;
 
     // 1. Setup the Muxer (The container builder)
