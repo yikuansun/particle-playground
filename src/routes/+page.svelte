@@ -13,9 +13,9 @@
             x: 400,
             y: 300,
         },
-        emissionRate: 1,
+        emissionRate: 10,
         particlesPerEmission: {
-            value: 80,
+            value: 10,
             variability: 10,
         },
         particleParams: {
@@ -28,7 +28,7 @@
                 variability: 360,
             },
             speed: {
-                value: 300,
+                value: 200,
                 variability: 80,
             },
             lifespan: {
@@ -162,6 +162,19 @@
         createAnimationFrames();
     });
 </script>
+
+<svelte:window onkeydown={(e) => {
+    if (document.activeElement?.tagName === "INPUT") return;
+    if (e.key === " ") {
+        if (!videoPlaying) {
+            videoPlaying = true;
+            playVideo();
+        }
+        else {
+            videoPlaying = false;
+        }
+    }
+}} />
 
 <div class="flex flex-col w-full h-full gap-5 p-5 box-border">
     <div class="flex flex-row gap-5">
