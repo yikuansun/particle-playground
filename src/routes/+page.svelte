@@ -180,43 +180,43 @@
             <b>Emitters</b>
             {#each emitters as emitter}
                 <div>
-                    <div class="flex flex-row">
-                        <span class="grow">Emissions per second</span>
-                        <input type="number" bind:value={emitter.emissionRate} onchange={createAnimationFrames} min={0.5} max={10} step={0.1} class="w-20" />
+                    <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Emissions per second</span></span>
+                        <input type="number" bind:value={emitter.emissionRate} onchange={createAnimationFrames} min={0.5} max={10} step={0.1} class="number-input" />
                     </div>
-                    <div class="flex flex-row">
-                        <span class="grow">Particles per emission</span>
-                        <input type="number" bind:value={emitter.particlesPerEmission.value} onchange={createAnimationFrames} min={0} max={100} step={1} class="w-20" />
-                        <span>±</span>
-                        <input type="number" bind:value={emitter.particlesPerEmission.variability} onchange={createAnimationFrames} min={0} max={100} step={1} class="w-20" />
+                    <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Particles per emission</span></span>
+                        <input type="number" bind:value={emitter.particlesPerEmission.value} onchange={createAnimationFrames} min={0} max={100} step={1} class="number-input" />
+                        <span><span class="align-middle">±</span></span>
+                        <input type="number" bind:value={emitter.particlesPerEmission.variability} onchange={createAnimationFrames} min={0} max={100} step={1} class="number-input" />
                     </div>
                     <b>Default particle parameters</b>
-                    <div class="flex flex-row gap-2">
-                        <span class="grow">Radius</span>
-                        <input type="number" bind:value={emitter.particleParams.radius.value} onchange={createAnimationFrames} min={0} max={100} step={1} class="w-20" />
-                        <span>±</span>
-                        <input type="number" bind:value={emitter.particleParams.radius.variability} onchange={createAnimationFrames} min={0} max={100} step={1} class="w-20" />
+                    <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Radius</span></span>
+                        <input type="number" bind:value={emitter.particleParams.radius.value} onchange={createAnimationFrames} min={0} max={100} step={1} class="number-input" />
+                        <span><span class="align-middle">±</span></span>
+                        <input type="number" bind:value={emitter.particleParams.radius.variability} onchange={createAnimationFrames} min={0} max={100} step={1} class="number-input" />
                     </div>
-                    <div class="flex flex-row gap-2">
-                        <span class="grow">Rotation</span>
-                        <input type="number" bind:value={emitter.particleParams.rotation.value} onchange={createAnimationFrames} min={0} max={360} step={1} class="w-20" />
-                        <span>±</span>
-                        <input type="number" bind:value={emitter.particleParams.rotation.variability} onchange={createAnimationFrames} min={0} max={360} step={1} class="w-20" />
+                    <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Rotation</span></span>
+                        <input type="number" bind:value={emitter.particleParams.rotation.value} onchange={createAnimationFrames} min={0} max={360} step={1} class="number-input" />
+                        <span><span class="align-middle">±</span></span>
+                        <input type="number" bind:value={emitter.particleParams.rotation.variability} onchange={createAnimationFrames} min={0} max={360} step={1} class="number-input" />
                     </div>
-                    <div class="flex flex-row gap-2">
-                        <span class="grow">Speed</span>
-                        <input type="number" bind:value={emitter.particleParams.speed.value} onchange={createAnimationFrames} min={0} max={1000} step={1} class="w-20" />
-                        <span>±</span>
-                        <input type="number" bind:value={emitter.particleParams.speed.variability} onchange={createAnimationFrames} min={0} max={1000} step={1} class="w-20" />
+                    <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Speed</span></span>
+                        <input type="number" bind:value={emitter.particleParams.speed.value} onchange={createAnimationFrames} min={0} max={1000} step={1} class="number-input" />
+                        <span><span class="align-middle">±</span></span>
+                        <input type="number" bind:value={emitter.particleParams.speed.variability} onchange={createAnimationFrames} min={0} max={1000} step={1} class="number-input" />
                     </div>
-                    <div class="flex flex-row gap-2">
-                        <span class="grow">Lifespan</span>
-                        <input type="number" bind:value={emitter.particleParams.lifespan.value} onchange={createAnimationFrames} min={0} max={10} step={0.1} class="w-20" />
-                        <span>±</span>
-                        <input type="number" bind:value={emitter.particleParams.lifespan.variability} onchange={createAnimationFrames} min={0} max={10} step={0.1} class="w-20" />
+                    <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Lifespan</span></span>
+                        <input type="number" bind:value={emitter.particleParams.lifespan.value} onchange={createAnimationFrames} min={0} max={10} step={0.1} class="number-input" />
+                        <span><span class="align-middle">±</span></span>
+                        <input type="number" bind:value={emitter.particleParams.lifespan.variability} onchange={createAnimationFrames} min={0} max={10} step={0.1} class="number-input" />
                     </div>
-                    <div class="flex flex-row gap-2">
-                        <span class="grow">Color</span>
+                    <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Color</span></span>
                         <input type="color" bind:value={emitter.particleParams.color} onchange={createAnimationFrames} />
                     </div>
                     <b>Particle Lifetime Settings</b>
@@ -257,8 +257,10 @@
         }}>
             <span class="icon icon-20 icon-filled align-middle">skip_next</span>    
         </button>
-        <input type="range" min={0} max={videoSettings.duration * videoSettings.fps - 1} bind:value={selectedFrame}
-            class="grow accent-blue-400" />
+        <span class="grow">
+            <input type="range" min={0} max={videoSettings.duration * videoSettings.fps - 1} bind:value={selectedFrame}
+                class="w-full progress-bar align-middle" />
+        </span>
     </div>
 </div>
 
