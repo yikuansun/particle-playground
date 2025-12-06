@@ -170,6 +170,8 @@
     onMount(async () => {
         await textureManager.loadTextures({
             smoke: (await import("$lib/assets/textures/smoke.png")).default,
+            dot: (await import("$lib/assets/textures/dot.png")).default,
+            circle_test: (await import("$lib/assets/textures/circle-test.png")).default,
         });
 
         createAnimationFrames();
@@ -265,6 +267,8 @@
                         <select bind:value={emitter.particleParams.texture} onchange={createAnimationFrames}>
                             <option value="default">Default</option>
                             <option value="smoke">Smoke</option>
+                            <option value="dot">Dot</option>
+                            <option value="circle_test">Circle (Test)</option>
                         </select>
                     </div>
                     <b>Particle Lifetime Settings</b>
