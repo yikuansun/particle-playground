@@ -268,7 +268,7 @@
     <button 
         onclick={handleExport} 
         disabled={isExporting}
-        class="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+        class="btn"
     >
         {isExporting ? 'Rendering...' : 'Export MP4'}
     </button>

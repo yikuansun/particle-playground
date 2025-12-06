@@ -35,4 +35,10 @@
         @apply w-0 h-0 bg-blue-500 border-none;
     }
 
+    .btn {
+        @apply rounded-md px-3 py-1.5 text-sm bg-neutral-800 border border-neutral-700 text-neutral-200;
+        @apply disabled:opacity-50 disabled:cursor-not-allowed;
+        @apply hover:bg-neutral-700 transition-colors;
+    }
+
 }
