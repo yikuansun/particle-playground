@@ -1,38 +1,34 @@
-# sv
+# Yikuan's Particle Playground
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A customizable particle system for visual effects. Built with Svelte and TypeScript.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Customizable particle system with particle parameters
+- Particle emission with random variation
+- Particle lifetime curves with random variation
+- Video export to MP4
+- Save and load projects
 
-```sh
-# create a new project in the current directory
-npx sv create
+## Usage
 
-# create a new project in my-app
-npx sv create my-app
-```
+### Development
 
-## Developing
+1. Clone the repository
+2. Install dependencies with `npm install`
+3. Run the development server with `npm run dev`
+4. Open `http://localhost:5173` in your browser
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Production
 
-```sh
-npm run dev
+1. Build the project with `npm run build`
+2. Serve the built files with your preferred method
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## Dependencies
 
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- [Svelte](https://svelte.dev/)
+- [Vite](https://vitejs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Svelte Canvas](https://danielnass.net/svelte-canvas/)
+- [Seeded Rand](https://www.npmjs.com/package/seeded-rand)
+- [MP4 Muxer](https://github.com/Vanilagy/mp4-muxer?tab=readme-ov-file)
