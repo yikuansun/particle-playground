@@ -61,3 +61,12 @@ Once you open the project in your browser, you can start creating particle syste
 
 - **Opacity curve**: The opacity of each particle over time. The x-axis represents the particle's lifespan (from the particle's birth to its death), and the y-axis represents the opacity (with 0 at the bottom and 1 at the top).
 - **Speed over time**: The speed of each particle over time. The x-axis represents the particle's lifespan (from the particle's birth to its death), and the y-axis represents the speed (with 0 at the bottom and the maximum speed (as defined in the particle parameters) at the top).
+
+## Roadmap
+
+- Implement 3D space
+- Allow for multiple emitters
+- Implement different emitter shapes (circle, rectangle, etc.)
+- Allow more export options (GIF, PNG sequence, etc.)
+- Add more particle lifetime settings (size, rotation, etc.)
+- Make more textures
