@@ -15,6 +15,8 @@ export type EmitterShape = {
     height: number;
 };
 
+export type BlendMode = 'source-over' | 'multiply' | 'screen' | 'darken' | 'lighten' | 'lighter';
+
 export interface PMNumber {
     value: number;
     variability: number;
@@ -40,6 +42,7 @@ export interface Particle {
     opacity: number;
     lifetimeSettings: ParticleLifetimeSettings;
     texture: string;
+    blendMode: BlendMode;
 }
 
 export interface ParticleParams {
@@ -51,6 +54,7 @@ export interface ParticleParams {
     color: string;
     lifetimeSettings: ParticleLifetimeSettings;
     texture: string;
+    blendMode: BlendMode;
 }
 
 export type CurveLut = Float32Array;

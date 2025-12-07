@@ -54,6 +54,7 @@
                 radiusCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
             },
             texture: "default",
+            blendMode: "source-over",
         },
     }]);
 
@@ -85,6 +86,7 @@
                         opacity: emitter.particleParams.lifetimeSettings.opacityCurve[0],
                         lifetimeSettings: emitter.particleParams.lifetimeSettings,
                         texture: emitter.particleParams.texture,
+                        blendMode: emitter.particleParams.blendMode,
                     }
                     frame.particles.push(particle);
                 }
@@ -146,6 +148,7 @@
         for (let particle of frame.particles) {
             ctx.save();
             ctx.globalAlpha = particle.opacity;
+            ctx.globalCompositeOperation = particle.blendMode;
             if (particle.texture === "default") {
                 ctx.fillStyle = particle.color;
                 ctx.beginPath();
@@ -288,6 +291,17 @@
                         <input type="number" bind:value={emitter.particleParams.rotation.value} onchange={createAnimationFrames} min={0} max={360} step={1} class="number-input" />
                         <span><span class="align-middle">±</span></span>
                         <input type="number" bind:value={emitter.particleParams.rotation.variability} onchange={createAnimationFrames} min={0} max={360} step={1} class="number-input" />
+                    </div>
+                    <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Blend Mode</span></span>
+                        <select bind:value={emitter.particleParams.blendMode} onchange={createAnimationFrames} class="dropdown">
+                            <option value="source-over">Normal</option>
+                            <option value="multiply">Multiply</option>
+                            <option value="screen">Screen</option>
+                            <option value="darken">Darken</option>
+                            <option value="lighten">Lighten</option>
+                            <option value="lighter">Add</option>
+                        </select>
                     </div>
                     <b>Particle Lifetime Settings</b>
                     <div>

@@ -42,7 +42,7 @@
     }
 
     .dropdown {
-        @apply rounded-md px-3 py-1.5 text-sm bg-neutral-800 border border-neutral-700 text-neutral-200;
+        @apply rounded-md px-3 py-1.5 text-sm bg-neutral-800 border border-neutral-700 text-neutral-200 pr-7;
     }
 
 }
