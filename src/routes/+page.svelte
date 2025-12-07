@@ -223,8 +223,7 @@
                 }} />
             </Canvas>
         </div>
-        <div class="w-100 overflow-y-scroll pr-3">
-            <b>Emitters</b>
+        <div class="w-100 overflow-y-scroll pr-3 scrollbar-dark">
             {#each emitters as emitter}
                 <div>
                     <b>Emitter Properties</b>
@@ -306,11 +305,11 @@
                         </select>
                     </div>
                     <b>Particle Lifetime Settings</b>
-                    <div>
+                    <div class="m-1">
                         <span>Opacity curve</span>
                         <CurveEditor bind:value={emitter.particleParams.lifetimeSettings.opacityCurve} onchange={createAnimationFrames}></CurveEditor>
                     </div>
-                    <div>
+                    <div class="m-1">
                         <span>Speed over time</span>
                         <CurveEditor
                             bind:value={emitter.particleParams.lifetimeSettings.speedCurve}
