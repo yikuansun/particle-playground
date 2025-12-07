@@ -13,6 +13,7 @@
         textureUrls["smoke"] = (await import("$lib/assets/textures/smoke.png")).default;
         textureUrls["dot"] = (await import("$lib/assets/textures/dot.png")).default;
         textureUrls["circle_test"] = (await import("$lib/assets/textures/circle-test.png")).default;
+        textureUrls["energy"] = (await import("$lib/assets/textures/energy.png")).default;
     })();
 
     let emitters: Emitter[] = $state([{
@@ -284,6 +285,7 @@
                             <option value="smoke">Smoke</option>
                             <option value="dot">Dot</option>
                             <option value="circle_test">Circle (Test)</option>
+                            <option value="energy">Energy</option>
                         </select>
                     </div>
                     <div class="flex flex-row gap-2 m-1">
