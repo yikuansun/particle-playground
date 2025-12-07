@@ -31,9 +31,13 @@
                 value: 10,
                 variability: 0,
             },
-            rotation: {
+            direction: {
                 value: 0,
                 variability: 360,
+            },
+            rotation: {
+                value: 0,
+                variability: 0,
             },
             speed: {
                 value: 200,
@@ -72,6 +76,7 @@
                         x: emitter.shape.x,
                         y: emitter.shape.y,
                         radius: emitter.particleParams.radius.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.radius.variability,
+                        direction: emitter.particleParams.direction.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.direction.variability,
                         rotation: emitter.particleParams.rotation.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.rotation.variability,
                         speed: emitter.particleParams.speed.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.speed.variability,
                         lifespan: emitter.particleParams.lifespan.value + rng.inRange(-0.5, 0.5) * emitter.particleParams.lifespan.variability,
@@ -94,8 +99,8 @@
             const lutIndex = Math.floor(normalizedLife * (particle.lifetimeSettings.opacityCurve.length - 1));
 
             let currentSpeed = particle.speed * particle.lifetimeSettings.speedCurve[lutIndex];
-            copy.x += currentSpeed / videoSettings.fps * Math.cos(particle.rotation * Math.PI / 180);
-            copy.y += currentSpeed / videoSettings.fps * Math.sin(particle.rotation * Math.PI / 180);
+            copy.x += currentSpeed / videoSettings.fps * Math.cos(particle.direction * Math.PI / 180);
+            copy.y += currentSpeed / videoSettings.fps * Math.sin(particle.direction * Math.PI / 180);
             copy.health -= 1 / (copy.lifespan * videoSettings.fps);
             
             copy.opacity = Math.max(0, Math.min(1, particle.lifetimeSettings.opacityCurve[lutIndex]));
@@ -149,7 +154,9 @@
             }
             else {
                 const texture = textureManager.getTintedTexture(particle.texture, particle.color);
-                ctx.drawImage(texture as CanvasImageSource, particle.x - particle.radius, particle.y - particle.radius, particle.radius * 2, particle.radius * 2);
+                ctx.translate(particle.x, particle.y);
+                ctx.rotate((particle.direction + particle.rotation) * Math.PI / 180);
+                ctx.drawImage(texture as CanvasImageSource, -particle.radius, -particle.radius, particle.radius * 2, particle.radius * 2);
             }
             ctx.restore();
         }
@@ -242,10 +249,10 @@
                         <input type="number" bind:value={emitter.particleParams.radius.variability} onchange={createAnimationFrames} min={0} max={100} step={1} class="number-input" />
                     </div>
                     <div class="flex flex-row gap-2 m-1">
-                        <span class="grow"><span class="align-middle">Rotation</span></span>
-                        <input type="number" bind:value={emitter.particleParams.rotation.value} onchange={createAnimationFrames} min={0} max={360} step={1} class="number-input" />
+                        <span class="grow"><span class="align-middle">Direction</span></span>
+                        <input type="number" bind:value={emitter.particleParams.direction.value} onchange={createAnimationFrames} min={0} max={360} step={1} class="number-input" />
                         <span><span class="align-middle">±</span></span>
-                        <input type="number" bind:value={emitter.particleParams.rotation.variability} onchange={createAnimationFrames} min={0} max={360} step={1} class="number-input" />
+                        <input type="number" bind:value={emitter.particleParams.direction.variability} onchange={createAnimationFrames} min={0} max={360} step={1} class="number-input" />
                     </div>
                     <div class="flex flex-row gap-2 m-1">
                         <span class="grow"><span class="align-middle">Speed</span></span>
@@ -275,6 +282,12 @@
                             <option value="dot">Dot</option>
                             <option value="circle_test">Circle (Test)</option>
                         </select>
+                    </div>
+                    <div class="flex flex-row gap-2 m-1">
+                        <span class="grow"><span class="align-middle">Rotation</span></span>
+                        <input type="number" bind:value={emitter.particleParams.rotation.value} onchange={createAnimationFrames} min={0} max={360} step={1} class="number-input" />
+                        <span><span class="align-middle">±</span></span>
+                        <input type="number" bind:value={emitter.particleParams.rotation.variability} onchange={createAnimationFrames} min={0} max={360} step={1} class="number-input" />
                     </div>
                     <b>Particle Lifetime Settings</b>
                     <div>

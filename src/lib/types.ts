@@ -31,6 +31,7 @@ export interface Particle {
     x: number;
     y: number;
     radius: number;
+    direction: number;
     rotation: number;
     speed: number;
     lifespan: number;
@@ -43,6 +44,7 @@ export interface Particle {
 
 export interface ParticleParams {
     radius: PMNumber;
+    direction: PMNumber;
     rotation: PMNumber;
     speed: PMNumber;
     lifespan: PMNumber;
