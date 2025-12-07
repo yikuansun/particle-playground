@@ -35,6 +35,7 @@ A customizable particle system for visual effects. Built with Svelte and TypeScr
 - [Svelte Canvas](https://danielnass.net/svelte-canvas/)
 - [Seeded Rand](https://www.npmjs.com/package/seeded-rand)
 - [MP4 Muxer](https://github.com/Vanilagy/mp4-muxer?tab=readme-ov-file)
+- [Tailwind Material Symbols](https://www.npmjs.com/package/@savaryna/tailwindcss-material-symbols)
 
 ## Usage
 
@@ -70,3 +71,4 @@ Once you open the project in your browser, you can start creating particle syste
 - Allow more export options (GIF, PNG sequence, etc.)
 - Add more particle lifetime settings (size, rotation, etc.)
 - Make more textures
+- Add forces (gravity, wind, noise map, etc.)
