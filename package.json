@@ -37,6 +37,7 @@
 	},
 	"dependencies": {
 		"@savaryna/tailwindcss-material-symbols": "^1.3.0",
+		"@sveltejs/adapter-static": "^3.0.10",
 		"mp4-muxer": "^5.2.2",
 		"seeded-rand": "^4.0.0",
 		"svelte-canvas": "^2.1.0"

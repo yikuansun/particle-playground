@@ -22,7 +22,7 @@ A customizable particle system for visual effects. Built with Svelte and TypeScr
 ### Production
 
 1. Build the project with `npm run build`
-2. Serve the built files with your preferred method
+2. Serve the built files (in the `docs` directory) with your preferred method
 
 ## Dependencies
 

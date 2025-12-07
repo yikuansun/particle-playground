@@ -225,8 +225,9 @@
                     emitter.particleParams.lifetimeSettings.opacityCurve = new Float32Array(emitter.particleParams.lifetimeSettings.opacityCurve);
                     emitter.particleParams.lifetimeSettings.radiusCurve = new Float32Array(emitter.particleParams.lifetimeSettings.radiusCurve);
                     emitter.particleParams.lifetimeSettings.speedCurve = new Float32Array(emitter.particleParams.lifetimeSettings.speedCurve);
+
+                    textureManager.loadTexture(emitter.particleParams.texture, textureUrls[emitter.particleParams.texture]);
                 }
-                console.log(emitters);
                 videoSettings = projectData.videoSettings;
                 createAnimationFrames();
             };
@@ -274,7 +275,7 @@
             <Canvas width={videoSettings.width} height={videoSettings.height} class="w-full! h-full! object-contain">
                 <Layer render={({ context: ctx }) => {
                     if (frames[selectedFrame]) {
-                        drawFrame(ctx, frames[selectedFrame]);
+                        drawFrame(ctx, frames[selectedFrame], "#000000");
                     }
                 }} />
             </Canvas>
