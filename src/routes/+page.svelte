@@ -220,14 +220,15 @@
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const projectData = JSON.parse((e.target as FileReader).result as string);
-                emitters = projectData.emitters;
-                for (let emitter of emitters) {
+                for (let emitter of projectData.emitters) {
                     emitter.particleParams.lifetimeSettings.opacityCurve = new Float32Array(emitter.particleParams.lifetimeSettings.opacityCurve);
                     emitter.particleParams.lifetimeSettings.radiusCurve = new Float32Array(emitter.particleParams.lifetimeSettings.radiusCurve);
                     emitter.particleParams.lifetimeSettings.speedCurve = new Float32Array(emitter.particleParams.lifetimeSettings.speedCurve);
 
-                    textureManager.loadTexture(emitter.particleParams.texture, textureUrls[emitter.particleParams.texture]);
+                    if (emitter.particleParams.texture !== "default")
+                        await textureManager.loadTexture(emitter.particleParams.texture, textureUrls[emitter.particleParams.texture]);
                 }
+                emitters = projectData.emitters;
                 videoSettings = projectData.videoSettings;
                 createAnimationFrames();
             };
