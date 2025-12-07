@@ -17,6 +17,12 @@ export type EmitterShape = {
 
 export type BlendMode = 'source-over' | 'multiply' | 'screen' | 'darken' | 'lighten' | 'lighter';
 
+export interface CurvePoint {
+    x: number;
+    y: number;
+    id: number;
+}
+
 export interface PMNumber {
     value: number;
     variability: number;
@@ -61,8 +67,11 @@ export type CurveLut = Float32Array;
 
 export interface ParticleLifetimeSettings {
     opacityCurve: CurveLut;
+    opacityCurvePoints: CurvePoint[];
     speedCurve: CurveLut;
+    speedCurvePoints: CurvePoint[];
     radiusCurve: CurveLut;
+    radiusCurvePoints: CurvePoint[];
 }
 
 export interface Frame {

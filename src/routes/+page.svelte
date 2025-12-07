@@ -51,8 +51,11 @@
             color: "#ffffff",
             lifetimeSettings: {
                 opacityCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
+                opacityCurvePoints: [{ x: 0, y: 1, id: 0 }, { x: 1, y: 0, id: 1 }],
                 speedCurve: new Float32Array((new Array(100)).fill(1)),
-                radiusCurve: new Float32Array((new Array(100)).fill(0).map((_, i) => 1 - i/100)),
+                speedCurvePoints: [{ x: 0, y: 1, id: 0 }, { x: 1, y: 1, id: 1 }],
+                radiusCurve: new Float32Array((new Array(100)).fill(1)),
+                radiusCurvePoints: [{ x: 0, y: 1, id: 0 }, { x: 1, y: 1, id: 1 }],
             },
             texture: "default",
             blendMode: "source-over",
@@ -186,7 +189,50 @@
     let settingsModalOpen = $state(false);
 
     function saveProject() {
+        let projectData: any = Object.assign({}, {
+            emitters: emitters,
+            videoSettings: videoSettings,
+        });
+
+        projectData.emitters.forEach((emitter: any, i: number) => {
+            emitter.particleParams.lifetimeSettings.opacityCurve = Array.from(emitter.particleParams.lifetimeSettings.opacityCurve);
+            emitter.particleParams.lifetimeSettings.radiusCurve = Array.from(emitter.particleParams.lifetimeSettings.radiusCurve);
+            emitter.particleParams.lifetimeSettings.speedCurve = Array.from(emitter.particleParams.lifetimeSettings.speedCurve);
+        });
+
+        const blob = new Blob([JSON.stringify(projectData)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `particle_simulation_${Date.now()}.json`;
+        a.click();
         
+        URL.revokeObjectURL(url);
+    }
+
+    function loadProject() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = async (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const projectData = JSON.parse((e.target as FileReader).result as string);
+                emitters = projectData.emitters;
+                for (let emitter of emitters) {
+                    emitter.particleParams.lifetimeSettings.opacityCurve = new Float32Array(emitter.particleParams.lifetimeSettings.opacityCurve);
+                    emitter.particleParams.lifetimeSettings.radiusCurve = new Float32Array(emitter.particleParams.lifetimeSettings.radiusCurve);
+                    emitter.particleParams.lifetimeSettings.speedCurve = new Float32Array(emitter.particleParams.lifetimeSettings.speedCurve);
+                }
+                console.log(emitters);
+                videoSettings = projectData.videoSettings;
+                createAnimationFrames();
+            };
+            reader.readAsText(file as Blob);
+        }
+        input.click();
     }
 
     onMount(async () => {
@@ -219,6 +265,9 @@
         <button onclick={() => {
             saveProject();
         }}>Save</button>
+        <button onclick={() => {
+            loadProject();
+        }}>Load</button>
     </div>
     <div class="grow flex flex-row gap-4 min-h-0">
         <div class="grow flex justify-center items-center">
@@ -314,16 +363,16 @@
                     <b>Particle Lifetime Settings</b>
                     <div class="m-1">
                         <span>Opacity curve</span>
-                        <CurveEditor bind:value={emitter.particleParams.lifetimeSettings.opacityCurve} onchange={createAnimationFrames}></CurveEditor>
+                        <CurveEditor
+                            bind:value={emitter.particleParams.lifetimeSettings.opacityCurve}
+                            bind:points={emitter.particleParams.lifetimeSettings.opacityCurvePoints}
+                            onchange={createAnimationFrames} />
                     </div>
                     <div class="m-1">
                         <span>Speed over time</span>
                         <CurveEditor
                             bind:value={emitter.particleParams.lifetimeSettings.speedCurve}
-                            defaultPoints={[
-                                { x: 0, y: 1 },
-                                { x: 1, y: 1 }
-                            ]}
+                            bind:points={emitter.particleParams.lifetimeSettings.speedCurvePoints}
                             onchange={createAnimationFrames} />
                     </div>
                 </div>

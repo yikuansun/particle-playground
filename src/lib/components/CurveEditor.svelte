@@ -1,37 +1,50 @@
+<script module>
+	export type Point = { x: number; y: number; id: number };
+</script>
+
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { tick } from 'svelte';
 
 	let { 
 		value = $bindable(), 
+		points = $bindable(),
 		resolution = 100,
 		color = "#3b82f6",
 		height = 200,
-        onchange = () => {},
+		onchange = () => {},
 		defaultPoints = [
 			{ x: 0, y: 1 },
 			{ x: 1, y: 0 }
-		],
+		]
 	} = $props();
 
-	// Types
-	type Point = { x: number; y: number; id: number };
-
-	// Initialize state
-	// We ensure there is always a start (0,y) and end (1,y) point
-	let points: Point[] = $state(
-		defaultPoints.map((p, i) => ({
+	// Initialization / Hydration Logic
+	// If points are not provided, use defaults.
+	// If points ARE provided (e.g. from save file), ensure they have IDs.
+	if (!points || points.length === 0) {
+		points = defaultPoints.map((p, i) => ({
 			x: p.x,
 			y: p.y,
-			id: i
-		}))
-	);
+			id: i // Simple ID generation for defaults
+		}));
+	} else {
+		// Check for missing IDs (common when loading from simple JSON)
+		// We reassign to ensure the view updates with the new IDs
+		const needsIds = points.some((p: any) => p.id === undefined);
+		if (needsIds) {
+			points = points.map((p: any, i: number) => ({
+				x: p.x,
+				y: p.y,
+				id: p.id !== undefined ? p.id : Date.now() + i
+			}));
+		}
+	}
 
 	let draggingPointId: number | null = $state(null);
 	let hoverPointId: number | null = $state(null);
 	let svgElement: SVGSVGElement | null = $state(null);
 
 	// Generate the Lookup Table (LUT) whenever points change
-	// This is what your particle system will actually READ.
 	$effect(() => {
 		// Sort points by X to ensure valid function
 		const sorted = [...points].sort((a, b) => a.x - b.x);
@@ -48,52 +61,40 @@
 	});
 
 	// --- Math Helpers (Cubic Hermite Spline) ---
-	// Solves for Y given X (t) using non-uniform spacing to ensure C1 continuity
 	function solveCubicHermite(t: number, pts: Point[]): number {
-		// 1. Find the segment t is inside
-		// Find index `i` such that pts[i].x > t. 
 		let i = 0;
 		while (i < pts.length && pts[i].x <= t) i++;
 		
-		// Handle edge cases
 		if (i === 0) return pts[0].y;
 		if (i === pts.length) return pts[pts.length - 1].y;
 
 		const pLeft = pts[i - 1];
 		const pRight = pts[i];
 		
-		// 2. Identify neighbors for tangent calculations
 		const pPrev = i - 2 >= 0 ? pts[i - 2] : pLeft;
 		const pNext = i + 1 < pts.length ? pts[i + 1] : pRight;
 
 		const segmentWidth = pRight.x - pLeft.x;
 		if (segmentWidth <= 0.000001) return pLeft.y;
 
-		// 3. Calculate Slopes (Finite Difference / Secant method)
-		// This creates smooth tangents by looking at the neighbors
-		
-		// Slope at Start of Segment (pLeft)
+		// Calculate Slopes
 		let slopeLeft;
 		if (pLeft === pPrev) {
 			slopeLeft = (pRight.y - pLeft.y) / (pRight.x - pLeft.x);
 		} else {
-			// Secant slope between Prev and Right
 			slopeLeft = (pRight.y - pPrev.y) / (pRight.x - pPrev.x);
 		}
 
-		// Slope at End of Segment (pRight)
 		let slopeRight;
 		if (pRight === pNext) {
 			slopeRight = (pRight.y - pLeft.y) / (pRight.x - pLeft.x);
 		} else {
-			// Secant slope between Left and Next
 			slopeRight = (pNext.y - pLeft.y) / (pNext.x - pLeft.x);
 		}
 
-		// 4. Interpolate using Cubic Hermite Basis
+		// Interpolate
 		const localT = (t - pLeft.x) / segmentWidth;
 		
-		// Scale tangents to the local interval 0..1
 		const m0 = slopeLeft * segmentWidth;
 		const m1 = slopeRight * segmentWidth;
 
@@ -114,17 +115,14 @@
 	function generatePath(pts: Point[], width: number, h: number): string {
 		if (pts.length < 2) return "";
 		
-		// Sort points for rendering logic (safety)
 		const sorted = [...pts].sort((a, b) => a.x - b.x);
 
 		let d = `M ${sorted[0].x * width} ${(1 - sorted[0].y) * h}`;
 		
-		// Increase steps for smoother visual rendering
 		const steps = 200;
 		for (let i = 1; i <= steps; i++) {
 			const t = i / steps;
 			const x = t * width;
-			// Clip Y to 0-1 for rendering safety, though math should hold
 			const val = Math.max(0, Math.min(1, solveCubicHermite(t, sorted)));
 			const y = (1 - val) * h;
 			d += ` L ${x} ${y}`;
@@ -157,7 +155,7 @@
 		const newId = Date.now();
 		const newPoint = { x: pos.x, y: pos.y, id: newId };
 		
-		const index = points.findIndex(p => p.x > pos.x);
+		const index = points.findIndex((p: Point) => p.x > pos.x);
 		
 		if (index === -1) return; 
 		
@@ -174,20 +172,17 @@
 		
 		const pos = clientToLocal(e);
 		
-		points = points.map(p => {
+		points = points.map((p: Point) => {
 			if (p.id !== draggingPointId) return p;
 
 			let newX = pos.x;
-			const index = points.findIndex(pt => pt.id === draggingPointId);
+			const index = points.findIndex((pt: Point) => pt.id === draggingPointId);
 			
-			// Constraints
 			if (index === 0) newX = 0;
 			else if (index === points.length - 1) newX = 1;
 			else {
-				// Prevent crossover
 				const prev = points[index - 1];
 				const next = points[index + 1];
-				// Add small buffer to prevent exact overlap division by zero
 				if (prev) newX = Math.max(prev.x + 0.001, newX);
 				if (next) newX = Math.min(next.x - 0.001, newX);
 			}
@@ -201,26 +196,24 @@
 		draggingPointId = null;
 		e.target?.releasePointerCapture(e.pointerId);
 
-		// Only trigger change if we were actually interacting
 		if (wasDragging) {
-			await tick(); // Wait for $effect to update 'value'
+			await tick();
 			onchange();
 		}
 	}
 
 	async function handlePointDblClick(e: MouseEvent, id: number) {
 		e.stopPropagation();
-		const index = points.findIndex(p => p.id === id);
+		const index = points.findIndex((p: Point) => p.id === id);
 		if (index === 0 || index === points.length - 1) return;
 		
-		points = points.filter(p => p.id !== id);
+		points = points.filter((p: Point) => p.id !== id);
 		
-		await tick(); // Wait for $effect to update 'value'
+		await tick();
 		onchange();
 	}
 
 	const gridLines = [0, 0.25, 0.5, 0.75, 1];
-
 </script>
 
 <div class="curve-container" style:height="{height}px">
