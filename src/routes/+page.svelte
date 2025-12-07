@@ -19,8 +19,8 @@
     let emitters: Emitter[] = $state([{
         shape: {
             type: 'point',
-            x: 400,
-            y: 300,
+            x: 480,
+            y: 270,
         },
         emissionRate: 10,
         particlesPerEmission: {
@@ -60,8 +60,8 @@
     }]);
 
     let videoSettings = $state({
-        width: 800,
-        height: 600,
+        width: 960,
+        height: 540,
         fps: 30,
         duration: 10,
     });
@@ -185,6 +185,10 @@
 
     let settingsModalOpen = $state(false);
 
+    function saveProject() {
+        
+    }
+
     onMount(async () => {
         createAnimationFrames();
     });
@@ -212,6 +216,9 @@
         <button onclick={() => {
             settingsModalOpen = true;
         }}>Project Settings</button>
+        <button onclick={() => {
+            saveProject();
+        }}>Save</button>
     </div>
     <div class="grow flex flex-row gap-4 min-h-0">
         <div class="grow flex justify-center items-center">
