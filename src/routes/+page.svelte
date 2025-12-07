@@ -1,3 +1,5 @@
+<!-- this is the main page of the application. The bulk of the code is in this file. -->
+
 <script lang="ts">
     import { onMount, untrack } from "svelte";
     import type { Particle, Emitter, Frame, ParticleLifetimeSettings, CurveLut } from "$lib/types";
@@ -8,6 +10,7 @@
     import { exportToMp4 } from "$lib/utils/videoExporter"
     import { textureManager } from "$lib/utils/TextureManager";
 
+    // Save URL of each texture. Textures are loaded dynamically through TextureManager.
     let textureUrls: Record<string, string> = {};
     (async () => {
         textureUrls["smoke"] = (await import("$lib/assets/textures/smoke.png")).default;
@@ -16,6 +19,7 @@
         textureUrls["energy"] = (await import("$lib/assets/textures/energy.png")).default;
     })();
 
+    // emitter parameters
     let emitters: Emitter[] = $state([{
         shape: {
             type: 'point',
@@ -69,6 +73,12 @@
         duration: 10,
     });
 
+    /**
+     * Generates a new frame based on the current parameters.
+     * @param index which frame we are currently on. Used to tell time.
+     * @param lastFrame data for the previous frame
+     * @param rng seeded random number generator. We need to use the same one consistently to ensure deterministic results.
+     */
     function getNextFrame(index: number, lastFrame: Frame, rng: SrandInstance) {
         let frame: Frame = { index, particles: [] };
 
@@ -97,7 +107,7 @@
             }
         }
 
-        // copy particles from last frame
+        // copy particles from last frame and update their properties
         for (let particle of lastFrame.particles) {
             let copy: Particle = Object.assign({}, particle);
 
@@ -120,7 +130,11 @@
         return frame;
     }
 
-    let frames: Frame[] = $state([]);
+    let frames: Frame[] = $state([]); // array of frame data
+    /**
+     * Generates the frame data for each frame.
+     * This function is called whenever the user updates any parameter.
+     */
     function createAnimationFrames() {
         let rng = new Srand(69);
 
@@ -130,9 +144,13 @@
         }
     }
 
+    // current frame that should be rendered (based on the video progress bar)
     let selectedFrame = $state(0);
 
     let videoPlaying = $state(false);
+    /**
+     * Starts the interval to show the animation.
+     */
     function playVideo() {
         if (videoPlaying) {
             setTimeout(playVideo, 1000 / videoSettings.fps);
@@ -141,6 +159,12 @@
         selectedFrame = (selectedFrame + 1) % (videoSettings.duration * videoSettings.fps);
     }
 
+    /**
+     * Renders a single frame of the animation.
+     * @param ctx canvas context (2D)
+     * @param frame frame data
+     * @param bg background color
+     */
     function drawFrame(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, frame: Frame, bg: string="black") {
         if (bg === "transparent") ctx.clearRect(0, 0, videoSettings.width, videoSettings.height);
         else {
@@ -172,6 +196,9 @@
     let exportModalOpen = $state(false);
     let isExporting = $state(false);
 
+    /**
+     * Exports the animation to MP4. Called when the user clicks the export button.
+    */
     async function handleExport() {
         if (isExporting) return;
         isExporting = true;
@@ -188,6 +215,9 @@
 
     let settingsModalOpen = $state(false);
 
+    /**
+     * Generate save file for the project and download it.
+     */
     function saveProject() {
         let projectData: any = Object.assign({}, {
             emitters: emitters,
@@ -211,6 +241,9 @@
         URL.revokeObjectURL(url);
     }
 
+    /**
+     * Loads a project from a save file into the editor.
+     */
     function loadProject() {
         const input = document.createElement('input');
         input.type = 'file';
@@ -237,6 +270,7 @@
         input.click();
     }
 
+    // onMount is called when the page is first loaded
     onMount(async () => {
         createAnimationFrames();
     });
@@ -244,6 +278,7 @@
 
 <svelte:window onkeydown={(e) => {
     if (document.activeElement?.tagName === "INPUT") return;
+    // pause/play when space is pressed
     if (e.key === " ") {
         if (!videoPlaying) {
             videoPlaying = true;
@@ -257,6 +292,7 @@
 
 <div class="flex flex-col w-full h-full gap-5 p-5 box-border">
     <div class="flex flex-row gap-5">
+        <!-- Menubar -->
         <span class="font-bold">Particle Playground</span>
         <button onclick={() => {
             exportModalOpen = true;
@@ -273,6 +309,7 @@
     </div>
     <div class="grow flex flex-row gap-4 min-h-0">
         <div class="grow flex justify-center items-center">
+            <!-- Preview -->
             <Canvas width={videoSettings.width} height={videoSettings.height} class="w-full! h-full! object-contain">
                 <Layer render={({ context: ctx }) => {
                     if (frames[selectedFrame]) {
@@ -282,6 +319,7 @@
             </Canvas>
         </div>
         <div class="w-100 overflow-y-scroll pr-3 scrollbar-dark">
+            <!-- Control Panel -->
             {#each emitters as emitter}
                 <div>
                     <b>Emitter Properties</b>
@@ -382,6 +420,7 @@
         </div>
     </div>
     <div class="flex flex-row gap-4">
+        <!-- Video Controls -->
         <button onclick={() => {
             selectedFrame--;
             if (selectedFrame < 0) selectedFrame = videoSettings.duration * videoSettings.fps - 1;
