@@ -2,7 +2,9 @@
 
 A customizable particle system for visual effects. Built with Svelte and TypeScript.
 
-### [Try it out online](https://yikuansun.github.io/particle-playground/)
+### [Try it out](https://yikuansun.github.io/particle-playground/)
+
+### [Video](https://www.youtube.com/watch?v=EopkYylSqAc)
 
 ## Features
 
